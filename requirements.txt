@@ -1,0 +1,6 @@
+cloakbrowser
+beautifulsoup4
+requests
+pytest
+pytest-mock
+requests-mock
