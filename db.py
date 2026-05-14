@@ -61,3 +61,36 @@ def init_db(db_path=None):
     """)
     conn.commit()
     return conn
+
+
+def upsert_video(conn, video):
+    conn.execute("""
+        INSERT INTO videos (code, title, cover_url, date, duration, maker, label, score)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(code) DO UPDATE SET
+            title=COALESCE(excluded.title, videos.title),
+            cover_url=COALESCE(excluded.cover_url, videos.cover_url),
+            date=COALESCE(excluded.date, videos.date),
+            duration=COALESCE(excluded.duration, videos.duration),
+            maker=COALESCE(excluded.maker, videos.maker),
+            label=COALESCE(excluded.label, videos.label),
+            score=COALESCE(excluded.score, videos.score),
+            updated_at=datetime('now','localtime')
+    """, (
+        video.get("code"), video.get("title"), video.get("cover_url"),
+        video.get("date"), video.get("duration"), video.get("maker"),
+        video.get("label"), video.get("score"),
+    ))
+    conn.commit()
+
+
+def save_rankings(conn, list_type, entries):
+    for code, _, rank in entries:
+        conn.execute("""
+            INSERT INTO rankings (video_code, list_type, rank, updated_at)
+            VALUES (?, ?, ?, datetime('now','localtime'))
+            ON CONFLICT(video_code, list_type) DO UPDATE SET
+                rank=excluded.rank,
+                updated_at=datetime('now','localtime')
+        """, (code, list_type, rank))
+    conn.commit()
