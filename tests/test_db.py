@@ -77,3 +77,82 @@ def test_save_rankings_replaces_old(conn):
     ).fetchall()
     assert len(rows) == 1
     assert rows[0]["rank"] == 5
+
+
+def test_save_actresses(conn):
+    from db import upsert_video, save_actresses
+    upsert_video(conn, {"code": "ABC-001"})
+    save_actresses(conn, "ABC-001", ["Alice", "Bob"])
+
+    rows = conn.execute(
+        "SELECT name FROM actresses WHERE video_code='ABC-001' ORDER BY name"
+    ).fetchall()
+    assert len(rows) == 2
+    assert rows[0]["name"] == "Alice"
+    assert rows[1]["name"] == "Bob"
+
+
+def test_save_actresses_replaces_old(conn):
+    from db import upsert_video, save_actresses
+    upsert_video(conn, {"code": "ABC-001"})
+    save_actresses(conn, "ABC-001", ["Alice"])
+    save_actresses(conn, "ABC-001", ["Charlie"])
+
+    rows = conn.execute(
+        "SELECT name FROM actresses WHERE video_code='ABC-001'"
+    ).fetchall()
+    assert len(rows) == 1
+    assert rows[0]["name"] == "Charlie"
+
+
+def test_save_magnets(conn):
+    from db import upsert_video, save_magnets
+    upsert_video(conn, {"code": "ABC-001"})
+    save_magnets(conn, "ABC-001", ["magnet:?xt=urn:btih:AAA", "magnet:?xt=urn:btih:BBB"])
+
+    rows = conn.execute(
+        "SELECT magnet FROM magnets WHERE video_code='ABC-001' ORDER BY magnet"
+    ).fetchall()
+    assert len(rows) == 2
+    assert rows[0]["magnet"] == "magnet:?xt=urn:btih:AAA"
+
+
+def test_save_magnets_ignores_duplicate(conn):
+    from db import upsert_video, save_magnets
+    upsert_video(conn, {"code": "ABC-001"})
+    save_magnets(conn, "ABC-001", ["magnet:?xt=urn:btih:AAA"])
+    save_magnets(conn, "ABC-001", ["magnet:?xt=urn:btih:AAA"])
+
+    rows = conn.execute(
+        "SELECT magnet FROM magnets WHERE video_code='ABC-001'"
+    ).fetchall()
+    assert len(rows) == 1
+
+
+def test_get_videos_missing_magnets(conn):
+    from db import upsert_video, save_magnets, get_videos_missing_magnets
+    upsert_video(conn, {"code": "OLD-001"})
+    upsert_video(conn, {"code": "NEW-001"})
+    save_magnets(conn, "OLD-001", ["magnet:?xt=urn:btih:AAA"])
+
+    result = get_videos_missing_magnets(conn, days=60, limit=20)
+    assert len(result) == 1
+    assert result[0] == "NEW-001"
+
+
+def test_update_video_search_url(conn):
+    from db import upsert_video, update_video_search_url
+    upsert_video(conn, {"code": "ABC-001"})
+    update_video_search_url(conn, "ABC-001", "https://clg55.top/search/ABC-001")
+
+    row = conn.execute("SELECT search_url FROM videos WHERE code=?", ("ABC-001",)).fetchone()
+    assert row["search_url"] == "https://clg55.top/search/ABC-001"
+
+
+def test_update_video_cover_path(conn):
+    from db import upsert_video, update_video_cover_path
+    upsert_video(conn, {"code": "ABC-001"})
+    update_video_cover_path(conn, "ABC-001", "covers/ABC-001.jpg")
+
+    row = conn.execute("SELECT cover_path FROM videos WHERE code=?", ("ABC-001",)).fetchone()
+    assert row["cover_path"] == "covers/ABC-001.jpg"

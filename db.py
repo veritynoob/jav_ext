@@ -94,3 +94,51 @@ def save_rankings(conn, list_type, entries):
                 updated_at=datetime('now','localtime')
         """, (code, list_type, rank))
     conn.commit()
+
+
+def save_actresses(conn, video_code, names):
+    conn.execute("DELETE FROM actresses WHERE video_code=?", (video_code,))
+    for name in names:
+        if name.strip():
+            conn.execute(
+                "INSERT INTO actresses (video_code, name) VALUES (?, ?)",
+                (video_code, name.strip())
+            )
+    conn.commit()
+
+
+def save_magnets(conn, video_code, magnets):
+    for magnet in magnets:
+        if magnet.strip():
+            conn.execute(
+                "INSERT OR IGNORE INTO magnets (video_code, magnet, source) VALUES (?, ?, ?)",
+                (video_code, magnet.strip(), "clg55")
+            )
+    conn.commit()
+
+
+def get_videos_missing_magnets(conn, days=60, limit=20):
+    rows = conn.execute("""
+        SELECT code FROM videos
+        WHERE code NOT IN (SELECT DISTINCT video_code FROM magnets)
+        AND created_at >= datetime('now', 'localtime', '-' || ? || ' days')
+        ORDER BY created_at DESC
+        LIMIT ?
+    """, (days, limit)).fetchall()
+    return [row["code"] for row in rows]
+
+
+def update_video_search_url(conn, code, search_url):
+    conn.execute(
+        "UPDATE videos SET search_url=?, updated_at=datetime('now','localtime') WHERE code=?",
+        (search_url, code)
+    )
+    conn.commit()
+
+
+def update_video_cover_path(conn, code, cover_path):
+    conn.execute(
+        "UPDATE videos SET cover_path=?, updated_at=datetime('now','localtime') WHERE code=?",
+        (cover_path, code)
+    )
+    conn.commit()
