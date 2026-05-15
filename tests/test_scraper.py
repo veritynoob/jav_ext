@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scraper import parse_list_page
+from scraper import parse_list_page, parse_search_page
 
 
 def load_fixture(name):
@@ -44,3 +44,24 @@ def test_parse_list_page_top_rated():
     results = parse_list_page(html)
     assert isinstance(results, list)
     assert len(results) > 0
+
+
+def test_parse_search_page_returns_magnets():
+    html = load_fixture("search_result.html")
+    search_url, magnets = parse_search_page(html)
+    assert isinstance(magnets, list)
+    assert isinstance(search_url, str)
+
+
+def test_parse_search_page_magnets_format():
+    html = load_fixture("search_result.html")
+    _, magnets = parse_search_page(html)
+    for m in magnets:
+        assert m.startswith("magnet:")
+        assert "xt=urn:btih:" in m
+
+
+def test_parse_search_page_empty_on_no_results():
+    html = "<html><body>No results found</body></html>"
+    search_url, magnets = parse_search_page(html)
+    assert magnets == []

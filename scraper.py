@@ -2,6 +2,17 @@ from bs4 import BeautifulSoup
 import re
 
 
+def parse_search_page(html, search_url=""):
+    """Parse clg55.top search page HTML, return (search_url, list of magnet links)."""
+    soup = BeautifulSoup(html, "html.parser")
+    magnets = []
+    for link in soup.select("a[href^='magnet:']"):
+        magnet = link.get("href", "").strip()
+        if magnet:
+            magnets.append(magnet)
+    return search_url, magnets
+
+
 def parse_list_page(html):
     """Parse JavLibrary list page HTML, return list of video dicts."""
     soup = BeautifulSoup(html, "html.parser")
