@@ -1,14 +1,14 @@
 import logging
 import random
-import time
 import sys
-from cloakbrowser import launch
+import time
 from config import (
     MOST_WANTED_URL, TOP_RATED_URL, SEARCH_BASE_URL, PROXY, WAIT_DELAY,
     COVERS_DIR, MAGNET_BACKFILL_DAYS, MAX_BACKFILL_COUNT, REQUEST_RETRIES,
     PAGE_INTERVAL_MIN, PAGE_INTERVAL_MAX,
 )
-from scraper import parse_list_page, parse_search_page
+from scraper import parse_list_page, parse_search_page, is_javlibrary_page
+from page_utils import load_with_cf_bypass
 from db import (
     init_db, upsert_video, save_actresses, save_magnets,
     save_rankings, get_videos_missing_magnets, update_video_search_url,
@@ -30,16 +30,15 @@ def random_delay():
     time.sleep(delay)
 
 
-def scrape_list(browser, url, list_type):
+def scrape_list(url, list_type):
     logger.info(f"Fetching {list_type}: {url}")
     for attempt in range(REQUEST_RETRIES):
         try:
-            page = browser.new_page()
-            page.goto(url)
-            logger.info(f"Waiting {WAIT_DELAY}s for page to load...")
-            time.sleep(WAIT_DELAY)
-            html = page.content()
-            page.close()
+            html = load_with_cf_bypass(url, proxy=PROXY, wait=WAIT_DELAY, timeout=60)
+            if html is None:
+                raise Exception(f"Failed to load page past Cloudflare (list_type={list_type})")
+            if not is_javlibrary_page(html):
+                raise Exception(f"Loaded page is not JavLibrary content (list_type={list_type})")
             items = parse_list_page(html)
             logger.info(f"Parsed {len(items)} items from {list_type}")
             return items
@@ -51,16 +50,16 @@ def scrape_list(browser, url, list_type):
     return []
 
 
-def scrape_magnets(browser, code):
+def scrape_magnets(code):
     search_url = f"{SEARCH_BASE_URL}/search/{code}"
     logger.info(f"Searching magnets for {code}")
     for attempt in range(REQUEST_RETRIES):
         try:
-            page = browser.new_page()
-            page.goto(search_url)
-            time.sleep(random.uniform(3, 5))
-            html = page.content()
-            page.close()
+            html = load_with_cf_bypass(search_url, proxy=PROXY, wait=random.uniform(3, 5), timeout=30)
+            if html is None:
+                raise Exception(f"Failed to load search page past Cloudflare (code={code})")
+            if not is_javlibrary_page(html):
+                raise Exception(f"Loaded page is not expected content (code={code})")
             _, magnets = parse_search_page(html, search_url)
             logger.info(f"Found {len(magnets)} magnets for {code}")
             return search_url, magnets
@@ -73,20 +72,13 @@ def scrape_magnets(browser, code):
 
 def main():
     logger.info("Starting JavLibrary scraper")
-    browser = None
-    try:
-        browser = launch(proxy=PROXY, humanize=True, headless=False)
-    except Exception as e:
-        logger.error(f"Failed to launch browser: {e}")
-        sys.exit(1)
 
+    conn = init_db()
     try:
-        conn = init_db()
-
         # 1. Scrape list pages
         all_items = {}
         for url, list_type in [(MOST_WANTED_URL, "most_wanted"), (TOP_RATED_URL, "top_rated")]:
-            items = scrape_list(browser, url, list_type)
+            items = scrape_list(url, list_type)
             for idx, item in enumerate(items):
                 code = item["code"]
                 if code not in all_items:
@@ -110,7 +102,7 @@ def main():
         # 2. Fetch magnets for new videos
         logger.info("Fetching magnets for new videos...")
         for code in all_items:
-            search_url, magnets = scrape_magnets(browser, code)
+            search_url, magnets = scrape_magnets(code)
             if search_url:
                 update_video_search_url(conn, code, search_url)
             if magnets:
@@ -122,7 +114,7 @@ def main():
         missing_codes = get_videos_missing_magnets(conn, days=MAGNET_BACKFILL_DAYS, limit=MAX_BACKFILL_COUNT)
         logger.info(f"Found {len(missing_codes)} videos needing magnet backfill")
         for code in missing_codes:
-            search_url, magnets = scrape_magnets(browser, code)
+            search_url, magnets = scrape_magnets(code)
             if search_url:
                 update_video_search_url(conn, code, search_url)
             if magnets:
@@ -130,12 +122,8 @@ def main():
             random_delay()
 
         logger.info("Scrape complete")
-        conn.close()
     finally:
-        try:
-            browser.close()
-        except Exception:
-            pass
+        conn.close()
 
 
 if __name__ == "__main__":

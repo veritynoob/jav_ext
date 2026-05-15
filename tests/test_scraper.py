@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scraper import parse_list_page, parse_search_page
+from scraper import parse_list_page, parse_search_page, is_javlibrary_page
 
 
 def load_fixture(name):
@@ -65,3 +65,22 @@ def test_parse_search_page_empty_on_no_results():
     html = "<html><body>No results found</body></html>"
     search_url, magnets = parse_search_page(html)
     assert magnets == []
+
+
+def test_is_javlibrary_page_on_list_page():
+    html = load_fixture("most_wanted.html")
+    assert is_javlibrary_page(html) is True
+
+
+def test_is_javlibrary_page_on_top_rated():
+    html = load_fixture("top_rated.html")
+    assert is_javlibrary_page(html) is True
+
+
+def test_is_javlibrary_page_on_cf_challenge():
+    html = load_fixture("cf_challenge.html")
+    assert is_javlibrary_page(html) is False
+
+
+def test_is_javlibrary_page_on_empty_html():
+    assert is_javlibrary_page("<html><body></body></html>") is False

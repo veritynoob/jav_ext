@@ -2,6 +2,16 @@ from bs4 import BeautifulSoup
 import re
 
 
+def is_javlibrary_page(html):
+    """Check if HTML is a real JavLibrary content page (not a challenge/error page)."""
+    soup = BeautifulSoup(html, "html.parser")
+    if soup.select(".video .id"):
+        return True
+    if soup.select("a[href^='magnet:']"):
+        return True
+    return False
+
+
 def parse_search_page(html, search_url=""):
     """Parse clg55.top search page HTML, return (search_url, list of magnet links)."""
     soup = BeautifulSoup(html, "html.parser")
