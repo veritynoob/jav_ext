@@ -4,3 +4,6 @@ requests
 pytest
 pytest-mock
 requests-mock
+fastapi
+uvicorn
+python-multipart
