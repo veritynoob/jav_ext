@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Videos{% endblock %}
+{% block content %}
+<h2>Videos ({{ total }})</h2>
+
+<div style="display:flex; gap:1rem; margin-bottom:1rem;">
+    <form hx-get="/videos" hx-target="#main" hx-push-url="true" style="display:flex; gap:0.5rem; align-items:end;">
+        <input type="hidden" name="q" value="{{ q }}">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <input type="hidden" name="order" value="{{ order }}">
+        <label>Filter by list
+            <select name="list_type" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
+                <option value="">All</option>
+                <option value="most_wanted" {% if list_type=='most_wanted' %}selected{% endif %}>Most Wanted</option>
+                <option value="top_rated" {% if list_type=='top_rated' %}selected{% endif %}>Top Rated</option>
+            </select>
+        </label>
+        <noscript><button type="submit">Filter</button></noscript>
+    </form>
+</div>
+
+{% include "videos_partial.html" %}
+{% endblock %}
