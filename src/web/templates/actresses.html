@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Actresses{% endblock %}
+{% block content %}
+<h2>Actresses</h2>
+
+<form hx-get="/actresses" hx-target="#main" hx-push-url="true">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search actress name...">
+    <button type="submit">Search</button>
+</form>
+
+<table>
+    <thead><tr><th>Name</th><th>Videos</th><th></th></tr></thead>
+    <tbody>
+    {% for a in actresses %}
+    <tr>
+        <td>{{ a.name }}</td>
+        <td>{{ a.video_count }}</td>
+        <td>
+            <button hx-get="/actresses/{{ a.name }}/videos"
+                    hx-target="next tr" hx-swap="afterend"
+                    hx-trigger="click once">Show videos</button>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
