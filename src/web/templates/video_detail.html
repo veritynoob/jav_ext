@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ video.code }}{% endblock %}
+{% block content %}
+<article>
+    <div class="grid">
+        <div>
+            {% if video.cover_url %}
+            <img src="{{ video.cover_url }}" alt="cover" style="max-width:100%;">
+            {% endif %}
+        </div>
+        <div>
+            <h2>{{ video.code }}</h2>
+            <p><strong>{{ video.title }}</strong></p>
+            <table>
+                <tr><td>Score</td><td>{{ video.score }}</td></tr>
+                <tr><td>Date</td><td>{{ video.date }}</td></tr>
+                <tr><td>Duration</td><td>{{ video.duration or '-' }}</td></tr>
+                <tr><td>Maker</td><td>{{ video.maker or '-' }}</td></tr>
+                <tr><td>Label</td><td>{{ video.label or '-' }}</td></tr>
+                {% if video.search_url %}
+                <tr><td>Search</td><td><a href="{{ video.search_url }}" target="_blank">clg55</a></td></tr>
+                {% endif %}
+            </table>
+
+            {% if rankings %}
+            <p>
+                {% for r in rankings %}
+                <span class="actress-tag">{{ r.list_type }} #{{ r.rank }}</span>
+                {% endfor %}
+            </p>
+            {% endif %}
+
+            <a href="/videos/{{ video.code }}/edit" role="button"
+               hx-get="/videos/{{ video.code }}/edit" hx-target="closest article" hx-swap="outerHTML">Edit</a>
+        </div>
+    </div>
+
+    <h3>Actresses</h3>
+    <div class="actress-list">
+    {% for a in actresses %}
+        <span class="actress-tag">
+            <a href="/actresses?q={{ a.name }}" style="color:inherit;">{{ a.name }}</a>
+        </span>
+    {% endfor %}
+    </div>
+    {% if not actresses %}<p>No actresses listed.</p>{% endif %}
+
+    <h3>Magnets ({{ magnets|length }})</h3>
+    {% if magnets %}
+    <ul>
+    {% for m in magnets %}
+        <li class="magnet-link">
+            <a href="{{ m.magnet }}">{{ m.magnet[:80] }}...</a>
+            <small>({{ m.source }}, {{ m.created_at }})</small>
+        </li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <p>No magnets found.</p>
+    {% endif %}
+</article>
+{% endblock %}

@@ -80,3 +80,36 @@ async def video_list(
         })
     finally:
         conn.close()
+
+
+@router.get("/{code}")
+async def video_detail(request: Request, code: str):
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        video = conn.execute("SELECT * FROM videos WHERE code=?", (code,)).fetchone()
+        if not video:
+            return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+
+        actresses = conn.execute(
+            "SELECT name FROM actresses WHERE video_code=? ORDER BY name", (code,)
+        ).fetchall()
+
+        magnets = conn.execute(
+            "SELECT magnet, source, created_at FROM magnets WHERE video_code=? ORDER BY created_at DESC", (code,)
+        ).fetchall()
+
+        rankings = conn.execute(
+            "SELECT list_type, rank FROM rankings WHERE video_code=?", (code,)
+        ).fetchall()
+
+        return templates.TemplateResponse("video_detail.html", {
+            "request": request,
+            "video": video,
+            "actresses": actresses,
+            "magnets": magnets,
+            "rankings": rankings,
+        })
+    finally:
+        conn.close()
