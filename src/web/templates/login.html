@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAV Panel - Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { width: 360px; padding: 2rem; }
+    </style>
+</head>
+<body>
+    <article class="login-card">
+        <h2>JAV Panel</h2>
+        {% if error %}
+        <p style="color: var(--pico-del-color);">{{ error }}</p>
+        {% endif %}
+        <form method="post">
+            <label>Password <input type="password" name="password" required autofocus></label>
+            <button type="submit">Login</button>
+        </form>
+    </article>
+</body>
+</html>
