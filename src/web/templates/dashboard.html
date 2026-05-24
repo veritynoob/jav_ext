@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+
+<div class="grid">
+    <div class="stat-card">
+        <div class="number">{{ stats.total_videos }}</div>
+        <div>Total Videos</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ stats.total_actresses }}</div>
+        <div>Actresses</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ stats.today_new }}</div>
+        <div>Today New</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ stats.missing_magnets }}</div>
+        <div>Missing Magnets</div>
+    </div>
+</div>
+
+<div class="grid">
+    <div>
+        <h3>Most Wanted Top 10</h3>
+        <table>
+            <thead><tr><th>#</th><th>Code</th><th>Title</th><th>Score</th></tr></thead>
+            <tbody>
+            {% for v in top_most_wanted %}
+            <tr>
+                <td>{{ v.rank }}</td>
+                <td><a href="/videos/{{ v.code }}">{{ v.code }}</a></td>
+                <td>{{ v.title[:50] if v.title else '' }}</td>
+                <td>{{ v.score }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h3>Top Rated Top 10</h3>
+        <table>
+            <thead><tr><th>#</th><th>Code</th><th>Title</th><th>Score</th></tr></thead>
+            <tbody>
+            {% for v in top_rated %}
+            <tr>
+                <td>{{ v.rank }}</td>
+                <td><a href="/videos/{{ v.code }}">{{ v.code }}</a></td>
+                <td>{{ v.title[:50] if v.title else '' }}</td>
+                <td>{{ v.score }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>Recently Added</h3>
+<table>
+    <thead><tr><th>Code</th><th>Title</th><th>Score</th><th>Date</th></tr></thead>
+    <tbody>
+    {% for v in recent %}
+    <tr>
+        <td><a href="/videos/{{ v.code }}">{{ v.code }}</a></td>
+        <td>{{ v.title[:60] if v.title else '' }}</td>
+        <td>{{ v.score }}</td>
+        <td>{{ v.date }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
