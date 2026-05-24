@@ -49,6 +49,15 @@ def auth_client(client):
     return client
 
 
+@pytest.fixture
+def empty_client(web_conn):
+    """A TestClient backed by an initialized but empty database (no seed data)."""
+    app = create_app()
+    client = TestClient(app)
+    client.post("/login", data={"password": "admin"})
+    return client
+
+
 class TestAuth:
     def test_login_page_returns_200(self, client):
         resp = client.get("/login")
@@ -122,7 +131,7 @@ class TestVideos:
     def test_video_list_htmx_returns_partial(self, auth_client):
         resp = auth_client.get("/videos", headers={"HX-Request": "true"})
         assert resp.status_code == 200
-        assert '<table' in resp.text.lower()
+        assert 'video-grid' in resp.text.lower()
 
     def test_video_list_invalid_sort_falls_back(self, auth_client):
         resp = auth_client.get("/videos?sort=invalid")
@@ -202,20 +211,6 @@ class TestActresses:
         assert "TEST-002" in resp.text
 
 
-class TestMagnets:
-    def test_magnet_list_returns_200(self, auth_client):
-        resp = auth_client.get("/magnets")
-        assert resp.status_code == 200
-
-    def test_magnet_list_shows_missing(self, auth_client):
-        resp = auth_client.get("/magnets")
-        assert "TEST-003" in resp.text  # no magnets
-
-    def test_magnet_list_shows_has_magnets(self, auth_client):
-        resp = auth_client.get("/magnets")
-        assert "TEST-001" in resp.text
-
-
 class TestTasks:
     def test_tasks_page_returns_200(self, auth_client):
         resp = auth_client.get("/tasks")
@@ -240,3 +235,27 @@ class TestErrorPages:
     def test_404_page(self, auth_client):
         resp = auth_client.get("/nonexistent")
         assert resp.status_code == 404
+
+
+class TestLayoutIntegration:
+    """Integration tests for grid layout, empty states, sidebar and route changes."""
+
+    def test_videos_page_returns_grid(self, auth_client):
+        resp = auth_client.get("/videos")
+        assert resp.status_code == 200
+        assert "video-grid" in resp.text
+        assert "video-card" in resp.text
+
+    def test_actresses_page_shows_empty_state(self, empty_client):
+        resp = empty_client.get("/actresses")
+        assert resp.status_code == 200
+        assert "No actresses found" in resp.text
+
+    def test_magnets_route_removed(self, auth_client):
+        resp = auth_client.get("/magnets")
+        assert resp.status_code == 404
+
+    def test_sidebar_no_dashboard_link(self, auth_client):
+        resp = auth_client.get("/videos")
+        assert "Dashboard" not in resp.text
+        assert "Magnets" not in resp.text
