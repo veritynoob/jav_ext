@@ -1,0 +1,24 @@
+<h3>Task History</h3>
+{% if tasks %}
+<table>
+    <thead><tr><th>ID</th><th>Status</th><th>Message</th><th>Started</th><th>Finished</th></tr></thead>
+    <tbody>
+    {% for tid, task in tasks.items() %}
+    <tr>
+        <td>{{ tid }}</td>
+        <td>
+            {% if task.status == 'running' %}&#x1F504; Running
+            {% elif task.status == 'done' %}✅ Done
+            {% else %}&#x274C; Error
+            {% endif %}
+        </td>
+        <td>{{ task.message }}</td>
+        <td>{{ task.get('started_at', '-')[:19] }}</td>
+        <td>{{ task.get('finished_at', '-')[:19] if task.get('finished_at') else '-' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No tasks run yet.</p>
+{% endif %}
