@@ -27,8 +27,8 @@ async def actress_list(request: Request, q: str = Query(default="")):
                 LIMIT 200
             """).fetchall()
 
-        return templates.TemplateResponse("actresses.html", {
-            "request": request, "actresses": rows, "q": q,
+        return templates.TemplateResponse(request, "actresses.html", {
+            "actresses": rows, "q": q,
         })
     finally:
         conn.close()
@@ -46,8 +46,8 @@ async def actress_videos(request: Request, name: str):
             WHERE a.name = ? ORDER BY v.date DESC
         """, (name,)).fetchall()
 
-        return templates.TemplateResponse("actress_videos_partial.html", {
-            "request": request, "name": name, "videos": videos,
+        return templates.TemplateResponse(request, "actress_videos_partial.html", {
+            "name": name, "videos": videos,
         })
     finally:
         conn.close()

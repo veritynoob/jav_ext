@@ -25,8 +25,8 @@ async def magnet_list(request: Request):
             GROUP BY v.code ORDER BY magnet_count DESC LIMIT 50
         """).fetchall()
 
-        return templates.TemplateResponse("magnets.html", {
-            "request": request, "missing": missing, "has_magnets": has_magnets,
+        return templates.TemplateResponse(request, "magnets.html", {
+            "missing": missing, "has_magnets": has_magnets,
         })
     finally:
         conn.close()

@@ -25,13 +25,13 @@ def _register_login(app: FastAPI):
 
     @app.get("/login")
     async def login_page(request: Request):
-        return templates.TemplateResponse("login.html", {"request": request, "error": None})
+        return templates.TemplateResponse(request, "login.html", {"error": None})
 
     @app.post("/login")
     async def login_post(request: Request, password: str = Form(...)):
         if verify_login(request, password):
             return RedirectResponse(url="/", status_code=302)
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid password"}, status_code=401)
+        return templates.TemplateResponse(request, "login.html", {"error": "Invalid password"}, status_code=401)
 
     @app.get("/logout")
     async def logout_route(request: Request):

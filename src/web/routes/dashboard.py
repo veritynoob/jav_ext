@@ -38,8 +38,7 @@ async def dashboard(request: Request):
                WHERE r.list_type='top_rated' ORDER BY r.rank LIMIT 10"""
         ).fetchall()
 
-        return templates.TemplateResponse("dashboard.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "dashboard.html", {
             "stats": {
                 "total_videos": total_videos,
                 "total_actresses": total_actresses,

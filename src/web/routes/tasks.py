@@ -53,8 +53,8 @@ def _run_backfill(task_id: str):
 
 @router.get("")
 async def tasks_page(request: Request):
-    return templates.TemplateResponse("tasks.html", {
-        "request": request, "tasks": _task_status,
+    return templates.TemplateResponse(request, "tasks.html", {
+        "tasks": _task_status,
     })
 
 
@@ -63,7 +63,7 @@ async def trigger_scrape(request: Request, list_type: str = "all"):
     task_id = str(uuid.uuid4())[:8]
     t = threading.Thread(target=_run_scrape, args=(task_id, list_type), daemon=True)
     t.start()
-    resp = templates.TemplateResponse("tasks.html", {"request": request, "tasks": _task_status})
+    resp = templates.TemplateResponse(request, "tasks.html", {"tasks": _task_status})
     resp.headers["HX-Trigger"] = '{"toast": {"msg": "Scrape task started", "type": "success"}}'
     return resp
 
@@ -73,13 +73,13 @@ async def trigger_backfill(request: Request):
     task_id = str(uuid.uuid4())[:8]
     t = threading.Thread(target=_run_backfill, args=(task_id,), daemon=True)
     t.start()
-    resp = templates.TemplateResponse("tasks.html", {"request": request, "tasks": _task_status})
+    resp = templates.TemplateResponse(request, "tasks.html", {"tasks": _task_status})
     resp.headers["HX-Trigger"] = '{"toast": {"msg": "Backfill task started", "type": "success"}}'
     return resp
 
 
 @router.get("/status")
 async def task_status(request: Request):
-    return templates.TemplateResponse("task_status_partial.html", {
-        "request": request, "tasks": _task_status,
+    return templates.TemplateResponse(request, "task_status_partial.html", {
+        "tasks": _task_status,
     })
