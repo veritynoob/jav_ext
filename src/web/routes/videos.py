@@ -113,3 +113,62 @@ async def video_detail(request: Request, code: str):
         })
     finally:
         conn.close()
+
+
+@router.get("/{code}/edit")
+async def video_edit_form(request: Request, code: str):
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        video = conn.execute("SELECT * FROM videos WHERE code=?", (code,)).fetchone()
+        if not video:
+            return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+        return templates.TemplateResponse("video_edit.html", {"request": request, "video": video, "error": None})
+    finally:
+        conn.close()
+
+
+@router.post("/{code}/edit")
+async def video_edit_save(request: Request, code: str):
+    from fastapi.responses import RedirectResponse
+
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        body = await request.form()
+        title = body.get("title", "").strip()
+        if not title:
+            video = conn.execute("SELECT * FROM videos WHERE code=?", (code,)).fetchone()
+            return templates.TemplateResponse("video_edit.html", {"request": request, "video": video, "error": "Title is required"}, status_code=422)
+
+        conn.execute("""
+            UPDATE videos SET title=?, score=?, date=?, duration=?, maker=?, label=?, updated_at=datetime('now','localtime')
+            WHERE code=?
+        """, (
+            title,
+            float(body.get("score", 0) or 0),
+            body.get("date", ""),
+            body.get("duration", ""),
+            body.get("maker", ""),
+            body.get("label", ""),
+            code,
+        ))
+        conn.commit()
+
+        if request.headers.get("HX-Request"):
+            video = conn.execute("SELECT * FROM videos WHERE code=?", (code,)).fetchone()
+            actresses = conn.execute("SELECT name FROM actresses WHERE video_code=? ORDER BY name", (code,)).fetchall()
+            magnets = conn.execute("SELECT magnet, source, created_at FROM magnets WHERE video_code=?", (code,)).fetchall()
+            rankings = conn.execute("SELECT list_type, rank FROM rankings WHERE video_code=?", (code,)).fetchall()
+            resp = templates.TemplateResponse("video_detail.html", {
+                "request": request, "video": video,
+                "actresses": actresses, "magnets": magnets, "rankings": rankings,
+            })
+            resp.headers["HX-Trigger"] = '{"toast": {"msg": "Saved successfully", "type": "success"}}'
+            return resp
+
+        return RedirectResponse(url=f"/videos/{code}", status_code=302)
+    finally:
+        conn.close()
