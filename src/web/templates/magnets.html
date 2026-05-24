@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Magnets{% endblock %}
+{% block content %}
+<h2>Magnets</h2>
+
+<h3>Missing Magnets ({{ missing|length }})</h3>
+{% if missing %}
+<table>
+    <thead><tr><th>Code</th><th>Title</th><th>Date</th><th>Added</th></tr></thead>
+    <tbody>
+    {% for v in missing %}
+    <tr>
+        <td><a href="/videos/{{ v.code }}">{{ v.code }}</a></td>
+        <td>{{ v.title[:60] if v.title else '' }}</td>
+        <td>{{ v.date }}</td>
+        <td>{{ v.created_at[:10] }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>All videos have magnets.</p>
+{% endif %}
+
+<h3>Videos With Magnets</h3>
+{% if has_magnets %}
+<table>
+    <thead><tr><th>Code</th><th>Title</th><th>Magnets</th></tr></thead>
+    <tbody>
+    {% for v in has_magnets %}
+    <tr>
+        <td><a href="/videos/{{ v.code }}">{{ v.code }}</a></td>
+        <td>{{ v.title[:60] if v.title else '' }}</td>
+        <td>{{ v.magnet_count }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No magnets found.</p>
+{% endif %}
+{% endblock %}
