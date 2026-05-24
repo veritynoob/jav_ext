@@ -5,13 +5,11 @@ def register_routers(app: FastAPI):
     from src.web.routes.dashboard import router as dashboard_router
     from src.web.routes.videos import router as videos_router
     from src.web.routes.actresses import router as actresses_router
-    from src.web.routes.magnets import router as magnets_router
     from src.web.routes.tasks import router as tasks_router
 
     app.include_router(dashboard_router)
     app.include_router(videos_router)
     app.include_router(actresses_router)
-    app.include_router(magnets_router)
     app.include_router(tasks_router)
 
     _register_login(app)
