@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAV Panel - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        body { display: flex; min-height: 100vh; }
+        .sidebar { width: 200px; padding: 1rem; border-right: 1px solid var(--pico-muted-border-color); }
+        .sidebar nav a { display: block; padding: 0.5rem 0; text-decoration: none; }
+        .sidebar nav a:hover { text-decoration: underline; }
+        .sidebar nav a.active { font-weight: bold; }
+        .main-content { flex: 1; padding: 1rem 2rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .topbar form { margin: 0; display: flex; gap: 0.5rem; }
+        #toast { position: fixed; bottom: 1rem; right: 1rem; z-index: 999; }
+        .toast-msg { padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.5rem; animation: fadeOut 3s forwards; }
+        .toast-success { background: var(--pico-ins-color); color: #fff; }
+        .toast-error { background: var(--pico-del-color); color: #fff; }
+        @keyframes fadeOut { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+        .video-table img { width: 60px; height: auto; }
+        .stat-card { text-align: center; padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: 8px; }
+        .stat-card .number { font-size: 2rem; font-weight: bold; }
+        .actress-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .actress-tag { padding: 0.1rem 0.5rem; background: var(--pico-secondary); border-radius: 4px; font-size: 0.85rem; }
+        .magnet-link { word-break: break-all; font-size: 0.85rem; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <h3><a href="/" style="text-decoration:none;">JAV Panel</a></h3>
+        <nav>
+            <a href="/" hx-get="/" hx-target="#main" hx-push-url="true">Dashboard</a>
+            <a href="/videos" hx-get="/videos" hx-target="#main" hx-push-url="true">Videos</a>
+            <a href="/actresses" hx-get="/actresses" hx-target="#main" hx-push-url="true">Actresses</a>
+            <a href="/magnets" hx-get="/magnets" hx-target="#main" hx-push-url="true">Magnets</a>
+            <a href="/tasks" hx-get="/tasks" hx-target="#main" hx-push-url="true">Tasks</a>
+        </nav>
+        <hr>
+        <a href="/logout" style="font-size:0.85rem;">Logout</a>
+    </aside>
+    <main class="main-content">
+        <div class="topbar">
+            <form hx-get="/videos" hx-target="#main" hx-push-url="true">
+                <input type="search" name="q" placeholder="Search code or title..." style="width:300px;">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        <div id="main">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    <div id="toast"></div>
+</body>
+</html>
