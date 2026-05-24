@@ -1,36 +1,28 @@
 <div id="video-table">
-<table class="video-table">
-    <thead>
-        <tr>
-            <th>Cover</th>
-            <th><a hx-get="/videos?q={{ q }}&sort=code&order={% if sort=='code' and order=='asc' %}desc{% else %}asc{% endif %}&list_type={{ list_type }}" hx-target="#main" hx-push-url="true">Code</a></th>
-            <th>Title</th>
-            <th><a hx-get="/videos?q={{ q }}&sort=score&order={% if sort=='score' and order=='desc' %}asc{% else %}desc{% endif %}&list_type={{ list_type }}" hx-target="#main" hx-push-url="true">Score</a></th>
-            <th><a hx-get="/videos?q={{ q }}&sort=date&order={% if sort=='date' and order=='desc' %}asc{% else %}desc{% endif %}&list_type={{ list_type }}" hx-target="#main" hx-push-url="true">Date</a></th>
-            <th>Maker</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for v in videos %}
-    <tr>
-        <td>{% if v.cover_url %}<img src="{{ v.cover_url }}" alt="cover" loading="lazy">{% endif %}</td>
-        <td><a href="/videos/{{ v.code }}">{{ v.code }}</a></td>
-        <td>{{ v.title[:60] if v.title else '' }}</td>
-        <td>{{ v.score }}</td>
-        <td>{{ v.date }}</td>
-        <td>{{ v.maker or '' }}</td>
-        <td>
-            <a href="/videos/{{ v.code }}">Detail</a>
-            <a href="/videos/{{ v.code }}/edit" hx-get="/videos/{{ v.code }}/edit" hx-target="closest tr" hx-swap="outerHTML">Edit</a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="video-grid">
+{% for v in videos %}
+<div class="video-card">
+    <a href="/videos/{{ v.code }}">
+        {% if v.cover_url %}
+        <img src="{{ v.cover_url }}" alt="{{ v.code }}" loading="lazy">
+        {% else %}
+        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'/>" alt="no cover">
+        {% endif %}
+    </a>
+    <div class="info">
+        <div class="code"><a href="/videos/{{ v.code }}">{{ v.code }}</a></div>
+        <div class="title">{{ v.title[:60] if v.title else '' }}</div>
+        <div class="meta">
+            <span>{% if v.score %}★ {{ v.score }}{% endif %}</span>
+            <span>{% if v.date %}{{ v.date }}{% endif %}</span>
+        </div>
+    </div>
+</div>
+{% endfor %}
+</div>
 
 {% if total_pages > 1 %}
-<nav>
+<nav style="margin-top:1rem;">
     <ul style="display:flex; gap:0.5rem; list-style:none; padding:0;">
     {% for p in range(1, total_pages + 1) %}
         <li>

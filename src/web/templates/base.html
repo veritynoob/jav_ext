@@ -26,6 +26,13 @@
         .actress-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
         .actress-tag { padding: 0.1rem 0.5rem; background: var(--pico-secondary); border-radius: 4px; font-size: 0.85rem; }
         .magnet-link { word-break: break-all; font-size: 0.85rem; font-family: monospace; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .video-card { border: 1px solid var(--pico-muted-border-color); border-radius: 8px; overflow: hidden; }
+        .video-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .video-card .info { padding: 0.5rem; }
+        .video-card .code { font-weight: bold; font-size: 0.9rem; }
+        .video-card .title { font-size: 0.8rem; color: var(--pico-muted-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .video-card .meta { font-size: 0.8rem; margin-top: 0.25rem; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
