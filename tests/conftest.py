@@ -12,7 +12,7 @@ def db_path(tmp_path):
 
 @pytest.fixture
 def conn(db_path):
-    from db import init_db
+    from src.db import init_db
     conn = init_db(db_path)
     conn.row_factory = sqlite3.Row
     yield conn

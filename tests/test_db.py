@@ -3,7 +3,7 @@ import pytest
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db import get_db_path, init_db
+from src.db import get_db_path, init_db
 
 
 def test_init_db_creates_tables(db_path):
@@ -29,7 +29,7 @@ def test_upsert_video(conn):
         "label": "Test Label",
         "score": 4.5,
     }
-    from db import upsert_video
+    from src.db import upsert_video
     upsert_video(conn, video)
 
     row = conn.execute("SELECT * FROM videos WHERE code=?", ("ABC-001",)).fetchone()
@@ -39,7 +39,7 @@ def test_upsert_video(conn):
 
 
 def test_upsert_video_updates_existing(conn):
-    from db import upsert_video
+    from src.db import upsert_video
     upsert_video(conn, {"code": "ABC-001", "title": "Title 1"})
     upsert_video(conn, {"code": "ABC-001", "title": "Title 2"})
 
@@ -48,7 +48,7 @@ def test_upsert_video_updates_existing(conn):
 
 
 def test_save_rankings(conn):
-    from db import upsert_video, save_rankings
+    from src.db import upsert_video, save_rankings
     upsert_video(conn, {"code": "ABC-001"})
     upsert_video(conn, {"code": "ABC-002"})
 
@@ -67,7 +67,7 @@ def test_save_rankings(conn):
 
 
 def test_save_rankings_replaces_old(conn):
-    from db import upsert_video, save_rankings
+    from src.db import upsert_video, save_rankings
     upsert_video(conn, {"code": "ABC-001"})
     save_rankings(conn, "most_wanted", [("ABC-001", "most_wanted", 1)])
     save_rankings(conn, "most_wanted", [("ABC-001", "most_wanted", 5)])
@@ -80,7 +80,7 @@ def test_save_rankings_replaces_old(conn):
 
 
 def test_save_actresses(conn):
-    from db import upsert_video, save_actresses
+    from src.db import upsert_video, save_actresses
     upsert_video(conn, {"code": "ABC-001"})
     save_actresses(conn, "ABC-001", ["Alice", "Bob"])
 
@@ -93,7 +93,7 @@ def test_save_actresses(conn):
 
 
 def test_save_actresses_replaces_old(conn):
-    from db import upsert_video, save_actresses
+    from src.db import upsert_video, save_actresses
     upsert_video(conn, {"code": "ABC-001"})
     save_actresses(conn, "ABC-001", ["Alice"])
     save_actresses(conn, "ABC-001", ["Charlie"])
@@ -106,7 +106,7 @@ def test_save_actresses_replaces_old(conn):
 
 
 def test_save_magnets(conn):
-    from db import upsert_video, save_magnets
+    from src.db import upsert_video, save_magnets
     upsert_video(conn, {"code": "ABC-001"})
     save_magnets(conn, "ABC-001", ["magnet:?xt=urn:btih:AAA", "magnet:?xt=urn:btih:BBB"])
 
@@ -118,7 +118,7 @@ def test_save_magnets(conn):
 
 
 def test_save_magnets_ignores_duplicate(conn):
-    from db import upsert_video, save_magnets
+    from src.db import upsert_video, save_magnets
     upsert_video(conn, {"code": "ABC-001"})
     save_magnets(conn, "ABC-001", ["magnet:?xt=urn:btih:AAA"])
     save_magnets(conn, "ABC-001", ["magnet:?xt=urn:btih:AAA"])
@@ -130,7 +130,7 @@ def test_save_magnets_ignores_duplicate(conn):
 
 
 def test_get_videos_missing_magnets(conn):
-    from db import upsert_video, save_magnets, get_videos_missing_magnets
+    from src.db import upsert_video, save_magnets, get_videos_missing_magnets
     upsert_video(conn, {"code": "OLD-001"})
     upsert_video(conn, {"code": "NEW-001"})
     save_magnets(conn, "OLD-001", ["magnet:?xt=urn:btih:AAA"])
@@ -141,7 +141,7 @@ def test_get_videos_missing_magnets(conn):
 
 
 def test_update_video_search_url(conn):
-    from db import upsert_video, update_video_search_url
+    from src.db import upsert_video, update_video_search_url
     upsert_video(conn, {"code": "ABC-001"})
     update_video_search_url(conn, "ABC-001", "https://clg55.top/search/ABC-001")
 
@@ -150,7 +150,7 @@ def test_update_video_search_url(conn):
 
 
 def test_update_video_cover_path(conn):
-    from db import upsert_video, update_video_cover_path
+    from src.db import upsert_video, update_video_cover_path
     upsert_video(conn, {"code": "ABC-001"})
     update_video_cover_path(conn, "ABC-001", "covers/ABC-001.jpg")
 

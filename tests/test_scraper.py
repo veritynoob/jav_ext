@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scraper import parse_list_page, parse_search_page, is_javlibrary_page
+from src.scraper import parse_list_page, parse_search_page, is_javlibrary_page
 
 
 def load_fixture(name):

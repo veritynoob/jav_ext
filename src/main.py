@@ -2,19 +2,19 @@ import logging
 import random
 import sys
 import time
-from config import (
+from src.config import (
     MOST_WANTED_URL, TOP_RATED_URL, SEARCH_BASE_URL, PROXY, WAIT_DELAY,
     COVERS_DIR, MAGNET_BACKFILL_DAYS, MAX_BACKFILL_COUNT, REQUEST_RETRIES,
     PAGE_INTERVAL_MIN, PAGE_INTERVAL_MAX,
 )
-from scraper import parse_list_page, parse_search_page, is_javlibrary_page
-from page_utils import load_with_cf_bypass
-from db import (
+from src.scraper import parse_list_page, parse_search_page, is_javlibrary_page
+from src.page_utils import load_with_cf_bypass
+from src.db import (
     init_db, upsert_video, save_actresses, save_magnets,
     save_rankings, get_videos_missing_magnets, update_video_search_url,
     update_video_cover_path,
 )
-from downloader import download_cover
+from src.downloader import download_cover
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,7 +34,7 @@ def scrape_list(url, list_type):
     logger.info(f"Fetching {list_type}: {url}")
     for attempt in range(REQUEST_RETRIES):
         try:
-            html = load_with_cf_bypass(url, proxy=PROXY, wait=WAIT_DELAY, timeout=60)
+            html = load_with_cf_bypass(url, proxy=PROXY, wait=WAIT_DELAY, timeout=60, headless=True)
             if html is None:
                 raise Exception(f"Failed to load page past Cloudflare (list_type={list_type})")
             if not is_javlibrary_page(html):
@@ -55,7 +55,7 @@ def scrape_magnets(code):
     logger.info(f"Searching magnets for {code}")
     for attempt in range(REQUEST_RETRIES):
         try:
-            html = load_with_cf_bypass(search_url, proxy=PROXY, wait=random.uniform(3, 5), timeout=30)
+            html = load_with_cf_bypass(search_url, proxy=PROXY, wait=random.uniform(3, 5), timeout=30, headless=True)
             if html is None:
                 raise Exception(f"Failed to load search page past Cloudflare (code={code})")
             if not is_javlibrary_page(html):

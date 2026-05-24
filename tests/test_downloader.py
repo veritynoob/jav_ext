@@ -3,7 +3,7 @@ import sys
 import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from downloader import download_cover
+from src.downloader import download_cover
 
 
 def test_download_cover_returns_path(tmp_path, requests_mock):

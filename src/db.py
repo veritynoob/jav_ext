@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from config import DATA_DIR
+from src.config import DATA_DIR
 
 
 def get_db_path():
