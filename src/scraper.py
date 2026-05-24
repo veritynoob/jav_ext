@@ -9,6 +9,10 @@ def is_javlibrary_page(html):
         return True
     if soup.select("a[href^='magnet:']"):
         return True
+    if soup.select("#video_date"):
+        return True
+    if soup.select("#video_id"):
+        return True
     return False
 
 
@@ -32,8 +36,16 @@ def parse_list_page(html):
         code_el = item.select_one(".id")
         code = code_el.text.strip() if code_el else ""
 
-        title_el = item.select_one("a")
-        title = title_el.text.strip() if title_el else ""
+        link_el = item.select_one("a")
+        title = link_el.text.strip() if link_el else ""
+        detail_url = ""
+        if link_el:
+            href = link_el.get("href", "")
+            if href:
+                if href.startswith("/"):
+                    detail_url = f"https://www.javlibrary.com{href}"
+                elif href.startswith("http"):
+                    detail_url = href
 
         img_el = item.select_one("img")
         cover_url = ""
@@ -77,5 +89,64 @@ def parse_list_page(html):
                 "duration": duration,
                 "maker": maker,
                 "label": label,
+                "detail_url": detail_url,
             })
     return results
+
+
+def parse_detail_page(html):
+    """Parse JavLibrary video detail page HTML, return dict of detail fields."""
+    soup = BeautifulSoup(html, "html.parser")
+
+    def _table_text(sel):
+        el = soup.select_one(sel)
+        if el:
+            td = el.select_one("td.text")
+            if td:
+                return td.text.strip()
+        return ""
+
+    date = _table_text("#video_date")
+    duration = _table_text("#video_length")
+
+    maker = ""
+    maker_el = soup.select_one("#video_maker td.text a, #video_maker td.text")
+    if maker_el:
+        maker = maker_el.text.strip()
+
+    label = ""
+    label_el = soup.select_one("#video_label td.text a, #video_label td.text")
+    if label_el:
+        label = label_el.text.strip()
+
+    score = 0.0
+    score_el = soup.select_one(".score")
+    if score_el:
+        score_match = re.search(r"[\d.]+", score_el.text)
+        if score_match:
+            score = float(score_match.group())
+
+    actresses = []
+    for a_el in soup.select(".star a, .cast a"):
+        name = a_el.text.strip()
+        if name:
+            actresses.append(name)
+
+    cover_url = ""
+    img_el = soup.select_one("#video_jacket_img")
+    if img_el:
+        src = img_el.get("data-src") or img_el.get("src") or ""
+        if src.startswith("//"):
+            cover_url = "https:" + src
+        elif src.startswith("http"):
+            cover_url = src
+
+    return {
+        "date": date,
+        "duration": duration,
+        "maker": maker,
+        "label": label,
+        "score": score,
+        "actresses": actresses,
+        "cover_url": cover_url,
+    }

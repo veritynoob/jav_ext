@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.scraper import parse_list_page, parse_search_page, is_javlibrary_page
+from src.scraper import parse_list_page, parse_search_page, is_javlibrary_page, parse_detail_page
 
 
 def load_fixture(name):
@@ -84,3 +84,21 @@ def test_is_javlibrary_page_on_cf_challenge():
 
 def test_is_javlibrary_page_on_empty_html():
     assert is_javlibrary_page("<html><body></body></html>") is False
+
+
+def test_parse_detail_page():
+    html = load_fixture("video_detail.html")
+    result = parse_detail_page(html)
+
+    assert result["date"] == "2024-06-15"
+    assert result["duration"] == "120 min"
+    assert result["maker"] == "Studio X"
+    assert result["label"] == "Label Y"
+    assert result["score"] == 8.52
+    assert result["actresses"] == ["Actress One", "Actress Two"]
+    assert result["cover_url"] == "https://pics.javlibrary.com/abc-123.jpg"
+
+
+def test_is_javlibrary_page_detail():
+    html = load_fixture("video_detail.html")
+    assert is_javlibrary_page(html) is True
