@@ -55,7 +55,7 @@
                hx-get="/actresses/{{ name|urlencode }}?sort={{ sort }}&order={{ order }}&page={{ p }}"
                hx-target="#main" hx-push-url="true"
                href="/actresses/{{ name|urlencode }}?sort={{ sort }}&order={{ order }}&page={{ p }}"
-               role="button" style="padding:0.3rem 0.6rem;">{{ p }}</a>
+               role="button">{{ p }}</a>
         </li>
     {% endfor %}
     </ul>

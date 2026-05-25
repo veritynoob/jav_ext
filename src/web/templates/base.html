@@ -1,41 +1,727 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JAV Panel - {% block title %}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <style>
-        body { display: flex; min-height: 100vh; }
-        .sidebar { width: 200px; padding: 1rem; border-right: 1px solid var(--pico-muted-border-color); }
-        .sidebar nav a { display: block; padding: 0.5rem 0; text-decoration: none; }
-        .sidebar nav a:hover { text-decoration: underline; }
-        .sidebar nav a.active { font-weight: bold; }
-        .main-content { flex: 1; padding: 1rem 2rem; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .topbar form { margin: 0; display: flex; gap: 0.5rem; }
-        #toast { position: fixed; bottom: 1rem; right: 1rem; z-index: 999; }
-        .toast-msg { padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.5rem; animation: fadeOut 3s forwards; }
-        .toast-success { background: var(--pico-ins-color); color: #fff; }
-        .toast-error { background: var(--pico-del-color); color: #fff; }
-        @keyframes fadeOut { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
-        .video-table img { width: 60px; height: auto; }
-        .stat-card { text-align: center; padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: 8px; }
-        .stat-card .number { font-size: 2rem; font-weight: bold; }
-        .actress-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-        .actress-tag { padding: 0.1rem 0.5rem; background: var(--pico-secondary); border-radius: 4px; font-size: 0.85rem; }
-        .magnet-link { word-break: break-all; font-size: 0.85rem; font-family: monospace; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-        .video-card { border: 1px solid var(--pico-muted-border-color); border-radius: 8px; overflow: hidden; }
-        .video-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; object-position: right; display: block; }
-        .video-card .info { padding: 0.5rem; }
-        .video-card .code { font-weight: bold; font-size: 0.9rem; }
-        .video-card .title { font-size: 0.8rem; color: var(--pico-muted-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .video-card .actress { font-size: 0.75rem; color: var(--pico-muted-color); margin-top: 0.15rem; }
-        .video-card .meta { font-size: 0.8rem; margin-top: 0.25rem; display: flex; justify-content: space-between; }
-        .video-card.visited { opacity: 0.6; }
-        .video-card.visited img { filter: grayscale(30%); }
+        /* ============================================================
+           Design Tokens
+           ============================================================ */
+        :root {
+            --bg: #020617;
+            --surface: #0E1223;
+            --surface-hover: #1A1F35;
+            --fg: #F8FAFC;
+            --fg-muted: #94A3B8;
+            --accent: #EC4899;
+            --accent-glow: rgba(236, 72, 153, 0.15);
+            --border: rgba(255,255,255,0.08);
+            --border-visible: rgba(255,255,255,0.12);
+            --destructive: #EF4444;
+            --success: #22C55E;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* ============================================================
+           Pico CSS Overrides – force our tokens into Pico variables
+           ============================================================ */
+        [data-theme="dark"], :root {
+            --pico-font-family: var(--font);
+            --pico-font-size: 100%;
+            --pico-line-height: 1.5;
+            --pico-color: var(--fg);
+            --pico-background-color: var(--bg);
+            --pico-primary: var(--accent);
+            --pico-primary-background: var(--accent);
+            --pico-primary-hover: #F062B0;
+            --pico-primary-hover-background: #F062B0;
+            --pico-primary-focus: var(--accent-glow);
+            --pico-primary-inverse: #020617;
+            --pico-secondary: var(--surface-hover);
+            --pico-secondary-background: var(--surface);
+            --pico-secondary-hover-background: var(--surface-hover);
+            --pico-secondary-color: var(--fg-muted);
+            --pico-muted-color: var(--fg-muted);
+            --pico-muted-border-color: var(--border);
+            --pico-form-element-background-color: var(--surface);
+            --pico-form-element-border-color: var(--border-visible);
+            --pico-form-element-color: var(--fg);
+            --pico-form-element-placeholder-color: var(--fg-muted);
+            --pico-form-element-active-background-color: var(--surface-hover);
+            --pico-form-element-active-border-color: var(--accent);
+            --pico-form-element-focus-color: var(--accent);
+            --pico-card-background-color: var(--surface);
+            --pico-card-sectioning-background-color: var(--surface);
+            --pico-card-border-color: var(--border);
+            --pico-table-border-color: var(--border);
+            --pico-table-row-stripped-background-color: rgba(255,255,255,0.02);
+            --pico-code-color: var(--fg);
+            --pico-code-background-color: var(--surface);
+            --pico-mark-background-color: var(--accent-glow);
+            --pico-mark-color: var(--fg);
+            --pico-ins-color: var(--success);
+            --pico-del-color: var(--destructive);
+            --pico-dropdown-background-color: var(--surface);
+            --pico-dropdown-border-color: var(--border-visible);
+            --pico-dropdown-hover-background-color: var(--surface-hover);
+            --pico-modal-overlay-background-color: rgba(2,6,23,0.8);
+            --pico-border-radius: var(--radius-sm);
+            --pico-transition: 200ms ease-out;
+            --pico-spacing: 0.75rem;
+            color-scheme: dark;
+        }
+
+        /* ============================================================
+           Base Reset
+           ============================================================ */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            font-family: var(--font);
+            font-weight: 400;
+            color: var(--fg);
+            background: var(--bg);
+            line-height: 1.5;
+        }
+
+        a { color: var(--fg); text-decoration: none; transition: color 200ms ease-out; }
+        a:hover { color: var(--accent); }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font);
+            font-weight: 600;
+            color: var(--fg);
+            line-height: 1.3;
+            margin-top: 0;
+        }
+        h2 { font-size: 1.35rem; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+        h3 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+
+        hr { border-color: var(--border); margin: 1.25rem 0; }
+
+        /* ============================================================
+           Layout: Sidebar + Main
+           ============================================================ */
+        .sidebar {
+            width: 220px;
+            min-width: 220px;
+            background: #020617;
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin: 0 0 1.5rem 0;
+            padding: 0 0.5rem;
+        }
+
+        .sidebar h3 a {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--fg);
+        }
+        .sidebar h3 a:hover { color: var(--accent); }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            flex: 1;
+        }
+
+        .sidebar nav a {
+            display: block;
+            padding: 0.6rem 0.75rem;
+            text-decoration: none;
+            color: var(--fg-muted);
+            border-radius: var(--radius-sm);
+            font-size: 0.925rem;
+            font-weight: 500;
+            transition: all 200ms ease-out;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar nav a:hover {
+            color: var(--fg);
+            background: var(--surface-hover);
+            text-decoration: none;
+        }
+
+        .sidebar nav a.active {
+            color: var(--fg);
+            font-weight: 600;
+            background: var(--accent-glow);
+            border-left: 3px solid var(--accent);
+        }
+
+        .sidebar hr { border-color: var(--border); }
+
+        .sidebar > a[href="/logout"] {
+            font-size: 0.8rem;
+            color: var(--fg-muted);
+            padding: 0.5rem 0.75rem;
+            text-decoration: none;
+            margin-top: auto;
+            border-radius: var(--radius-sm);
+            transition: color 200ms ease-out;
+        }
+        .sidebar > a[href="/logout"]:hover { color: var(--destructive); }
+
+        .main-content {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            min-width: 0;
+            overflow-x: hidden;
+        }
+
+        /* ============================================================
+           Topbar
+           ============================================================ */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar form {
+            margin: 0;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .topbar input[type="search"] {
+            width: 300px;
+            padding: 0.55rem 0.85rem;
+            background: var(--surface);
+            border: 1px solid var(--border-visible);
+            border-radius: var(--radius-sm);
+            color: var(--fg);
+            font-family: var(--font);
+            font-size: 0.9rem;
+            transition: border-color 200ms ease-out, box-shadow 200ms ease-out;
+            outline: none;
+        }
+
+        .topbar input[type="search"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .topbar input[type="search"]::placeholder {
+            color: var(--fg-muted);
+        }
+
+        .topbar button[type="submit"] {
+            padding: 0.55rem 1.1rem;
+            background: var(--surface);
+            border: 1px solid var(--border-visible);
+            border-radius: var(--radius-sm);
+            color: var(--fg-muted);
+            font-family: var(--font);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 200ms ease-out;
+        }
+
+        .topbar button[type="submit"]:hover {
+            color: var(--fg);
+            background: var(--surface-hover);
+            border-color: var(--accent);
+        }
+
+        /* ============================================================
+           Video Grid & Cards
+           ============================================================ */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .video-card {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: all 200ms ease-out;
+        }
+
+        .video-card:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-visible);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-card img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            object-position: right;
+            display: block;
+            background: var(--bg);
+        }
+
+        .video-card .info {
+            padding: 0.65rem 0.75rem 0.75rem;
+        }
+
+        .video-card .code {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .video-card .code a {
+            color: var(--fg);
+            text-decoration: none;
+            transition: color 200ms ease-out;
+        }
+        .video-card .code a:hover { color: var(--accent); }
+
+        .video-card .title {
+            font-size: 0.78rem;
+            color: var(--fg-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+
+        .video-card .actress {
+            font-size: 0.72rem;
+            color: var(--fg-muted);
+            margin-top: 0.2rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .video-card .meta {
+            font-size: 0.75rem;
+            margin-top: 0.35rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--fg-muted);
+        }
+
+        .video-card .meta span:first-child { color: var(--accent); }
+
+        /* Visited state */
+        .video-card.visited {
+            opacity: 0.5;
+            transition: opacity 200ms ease-out;
+        }
+        .video-card.visited img { filter: grayscale(40%); }
+        .video-card.visited:hover { opacity: 0.7; }
+
+        /* Video thumbnail in table views */
+        .video-table img {
+            width: 60px;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        /* ============================================================
+           Favorite Button
+           ============================================================ */
+        [id^="fav-btn-"] button,
+        .fav-btn {
+            background: rgba(0, 0, 0, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 6px !important;
+            color: var(--fg) !important;
+            font-size: 1.05rem !important;
+            cursor: pointer;
+            padding: 0.1rem 0.35rem !important;
+            line-height: 1.2;
+            transition: all 200ms ease-out;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        [id^="fav-btn-"] button:hover,
+        .fav-btn:hover {
+            background: rgba(0, 0, 0, 0.75) !important;
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        /* ============================================================
+           Actress Tags & List
+           ============================================================ */
+        .actress-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .actress-tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--fg-muted);
+            transition: all 200ms ease-out;
+        }
+
+        .actress-tag a {
+            color: var(--fg-muted);
+            text-decoration: none;
+        }
+        .actress-tag:hover {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+            color: var(--fg);
+        }
+        .actress-tag:hover a { color: var(--fg); }
+
+        /* ============================================================
+           Magnet Links
+           ============================================================ */
+        .magnet-link {
+            word-break: break-all;
+            font-size: 0.85rem;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            background: var(--surface);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            color: var(--fg-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* ============================================================
+           Stat Cards
+           ============================================================ */
+        .stat-card {
+            text-align: center;
+            padding: 1.25rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            transition: all 200ms ease-out;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-visible);
+            background: var(--surface-hover);
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--fg);
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .stat-card div:last-child {
+            font-size: 0.8rem;
+            color: var(--fg-muted);
+            font-weight: 500;
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* ============================================================
+           Pico Grid override
+           ============================================================ */
+        .grid { gap: 1rem; }
+
+        /* ============================================================
+           Toast Notifications
+           ============================================================ */
+        #toast {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast-msg {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--fg);
+            background: var(--surface);
+            border: 1px solid var(--border-visible);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            animation: toastFadeOut 3s ease-out forwards;
+            max-width: 340px;
+            word-break: break-word;
+        }
+
+        .toast-success {
+            border-left: 3px solid var(--success);
+        }
+
+        .toast-error {
+            border-left: 3px solid var(--destructive);
+        }
+
+        @keyframes toastFadeOut {
+            0%   { opacity: 0; transform: translateY(10px); }
+            10%  { opacity: 1; transform: translateY(0); }
+            70%  { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-4px); }
+        }
+
+        /* ============================================================
+           Forms: inputs, selects, buttons
+           ============================================================ */
+        input, select, textarea {
+            font-family: var(--font);
+            background: var(--surface) !important;
+            color: var(--fg) !important;
+            border: 1px solid var(--border-visible) !important;
+            border-radius: var(--radius-sm) !important;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            transition: border-color 200ms ease-out, box-shadow 200ms ease-out;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px var(--accent-glow) !important;
+            outline: none;
+        }
+
+        input::placeholder { color: var(--fg-muted); }
+
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        }
+
+        label { color: var(--fg-muted); font-size: 0.85rem; font-weight: 500; }
+
+        /* Button overrides */
+        button, [role="button"], input[type="submit"], input[type="button"] {
+            font-family: var(--font);
+            font-weight: 500;
+            transition: all 200ms ease-out;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        button:hover, [role="button"]:hover, input[type="submit"]:hover {
+            background: #F062B0;
+        }
+        button:focus-visible, [role="button"]:focus-visible {
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        button.secondary, [role="button"].secondary {
+            background: var(--surface);
+            color: var(--fg-muted);
+            border: 1px solid var(--border-visible);
+        }
+        button.secondary:hover, [role="button"].secondary:hover {
+            background: var(--surface-hover);
+            color: var(--fg);
+        }
+
+        button.outline, [role="button"].outline {
+            background: transparent;
+            color: var(--fg-muted);
+            border: 1px solid var(--border-visible);
+        }
+        button.outline:hover, [role="button"].outline:hover {
+            background: var(--surface-hover);
+            color: var(--fg);
+        }
+
+        /* Pagination button styling */
+        a[role="button"] {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.85rem;
+            border-radius: var(--radius-sm) !important;
+            text-decoration: none;
+        }
+
+        nav a[role="button"] {
+            background: var(--surface);
+            color: var(--fg-muted);
+            border: 1px solid var(--border);
+        }
+        nav a[role="button"]:hover {
+            background: var(--surface-hover);
+            color: var(--fg);
+        }
+        nav a[role="button"].active,
+        nav a.active[role="button"] {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Copy magnet button */
+        .copy-magnet-btn {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+        }
+
+        /* ============================================================
+           Tables
+           ============================================================ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            color: var(--fg-muted);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--border-visible);
+        }
+
+        tbody td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--fg);
+        }
+
+        tbody tr:hover td { background: var(--surface-hover); }
+
+        /* ============================================================
+           Articles (Pico card elements)
+           ============================================================ */
+        article {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ============================================================
+           Scrollbar
+           ============================================================ */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+
+        /* ============================================================
+           Responsive
+           ============================================================ */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: static;
+                padding: 0.75rem 1rem;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .sidebar h3 { margin: 0; font-size: 1rem; }
+            .sidebar nav {
+                flex-direction: row;
+                gap: 0.25rem;
+                flex: none;
+            }
+            .sidebar nav a {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.8rem;
+                border-left: none;
+            }
+            .sidebar nav a.active {
+                border-left: none;
+                border-bottom: 2px solid var(--accent);
+            }
+            .sidebar > a[href="/logout"] { margin: 0; }
+
+            .main-content { padding: 1rem; }
+
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .topbar input[type="search"] { width: 100%; }
+
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body>

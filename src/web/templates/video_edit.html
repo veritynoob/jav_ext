@@ -1,6 +1,6 @@
 <article>
     <h2>Edit {{ video.code }}</h2>
-    {% if error %}<p style="color:var(--pico-del-color);">{{ error }}</p>{% endif %}
+    {% if error %}<p style="color:var(--destructive);">{{ error }}</p>{% endif %}
     <form hx-post="/videos/{{ video.code }}/edit" hx-target="closest article" hx-swap="outerHTML">
         <label>Code <input type="text" value="{{ video.code }}" disabled></label>
         <label>Title <input type="text" name="title" value="{{ video.title or '' }}" required></label>

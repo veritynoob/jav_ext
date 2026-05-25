@@ -16,9 +16,10 @@
         <td>{{ a.name }}</td>
         <td>{{ a.video_count }}</td>
         <td>
-            <button hx-get="/actresses/{{ a.name|urlencode }}/videos"
-                    hx-target="next tr" hx-swap="afterend"
-                    hx-trigger="click once">Show videos</button>
+            <a href="/actresses/{{ a.name|urlencode }}"
+               hx-get="/actresses/{{ a.name|urlencode }}"
+               hx-target="#main" hx-push-url="true"
+               role="button">Show videos</a>
         </td>
     </tr>
     {% else %}

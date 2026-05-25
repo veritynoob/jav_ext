@@ -6,15 +6,99 @@
     <title>JAV Panel - Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-card { width: 360px; padding: 2rem; }
+        :root {
+            --bg: #020617;
+            --surface: #0E1223;
+            --surface-hover: #1A1F35;
+            --fg: #F8FAFC;
+            --fg-muted: #94A3B8;
+            --accent: #EC4899;
+            --accent-glow: rgba(236,72,153,0.15);
+            --border: rgba(255,255,255,0.08);
+            --border-visible: rgba(255,255,255,0.12);
+            --destructive: #EF4444;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+        }
+        :root {
+            --pico-background-color: var(--bg);
+            --pico-color: var(--fg);
+            --pico-muted-color: var(--fg-muted);
+            --pico-primary: var(--accent);
+            --pico-primary-background: var(--accent);
+            --pico-primary-hover: #F062A8;
+            --pico-primary-focus: var(--accent-glow);
+            --pico-primary-inverse: #020617;
+            --pico-form-element-background-color: var(--surface);
+            --pico-form-element-border-color: var(--border-visible);
+            --pico-form-element-color: var(--fg);
+            --pico-form-element-placeholder-color: var(--fg-muted);
+            --pico-form-element-active-border-color: var(--accent);
+            --pico-del-color: var(--destructive);
+            color-scheme: dark;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--fg);
+            margin: 0;
+        }
+        .login-card {
+            width: 360px;
+            padding: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+        .login-card h2 {
+            text-align: center;
+            color: var(--fg);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        label {
+            color: var(--fg-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        input {
+            background: var(--bg) !important;
+            color: var(--fg) !important;
+            border: 1px solid var(--border-visible) !important;
+            border-radius: var(--radius-sm) !important;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.95rem;
+        }
+        input:focus {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px var(--accent-glow) !important;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            transition: background 0.15s;
+        }
+        button:hover { background: #F062A8; }
+        .error-msg { color: var(--destructive); font-size: 0.9rem; margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
     <article class="login-card">
         <h2>JAV Panel</h2>
         {% if error %}
-        <p style="color: var(--pico-del-color);">{{ error }}</p>
+        <p class="error-msg">{{ error }}</p>
         {% endif %}
         <form method="post">
             <label>Password <input type="password" name="password" required autofocus></label>
