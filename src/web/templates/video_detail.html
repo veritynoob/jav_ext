@@ -43,7 +43,7 @@
             <div style="display:flex; gap:0.5rem;">
                 <a href="/videos/{{ video.code }}/edit" role="button"
                    hx-get="/videos/{{ video.code }}/edit" hx-target="closest article" hx-swap="outerHTML">Edit</a>
-                {% include "favorite_btn.html" %}
+                {% with code=video.code %}{% include "favorite_btn.html" %}{% endwith %}
             </div>
         </div>
     </div>

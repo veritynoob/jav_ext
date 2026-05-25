@@ -1,4 +1,5 @@
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
@@ -12,7 +13,15 @@ templates = Jinja2Templates(directory=str(WEB_DIR / "templates"))
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="JAV Management Panel")
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        from src.db import init_db
+        init_db()
+        from src.web.scheduler import start_scheduler
+        start_scheduler()
+        yield
+
+    app = FastAPI(title="JAV Management Panel", lifespan=lifespan)
 
     app.add_middleware(SessionMiddleware, secret_key=WEB_SECRET_KEY)
 
