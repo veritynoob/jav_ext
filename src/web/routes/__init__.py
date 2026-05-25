@@ -6,11 +6,13 @@ def register_routers(app: FastAPI):
     from src.web.routes.videos import router as videos_router
     from src.web.routes.actresses import router as actresses_router
     from src.web.routes.tasks import router as tasks_router
+    from src.web.routes.favorites import router as favorites_router
 
     app.include_router(dashboard_router)
     app.include_router(videos_router)
     app.include_router(actresses_router)
     app.include_router(tasks_router)
+    app.include_router(favorites_router)
 
     _register_login(app)
 
