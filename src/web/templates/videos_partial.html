@@ -1,7 +1,10 @@
 <div id="video-table">
 <div class="video-grid">
 {% for v in videos %}
-<div class="video-card">
+<div class="video-card" style="position:relative;">
+    <span style="position:absolute;top:0.25rem;right:0.25rem;z-index:2;">
+        {% with code=v.code, is_favorited=v.is_favorited %}{% include "favorite_btn.html" %}{% endwith %}
+    </span>
     <a href="/videos/{{ v.code }}">
         {% if v.cover_url %}
         <img src="{{ v.cover_url }}" alt="{{ v.code }}" loading="lazy">
@@ -12,6 +15,7 @@
     <div class="info">
         <div class="code"><a href="/videos/{{ v.code }}">{{ v.code }}</a></div>
         <div class="title">{{ v.title[:60] if v.title else '' }}</div>
+        {% if v.first_actress %}<div class="actress">{{ v.first_actress }}</div>{% endif %}
         <div class="meta">
             <span>{% if v.score %}★ {{ v.score }}{% endif %}</span>
             <span>{% if v.date %}{{ v.date }}{% endif %}</span>

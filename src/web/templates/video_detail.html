@@ -14,13 +14,23 @@
             <table>
                 <tr><td>Score</td><td>{{ video.score }}</td></tr>
                 <tr><td>Date</td><td>{{ video.date }}</td></tr>
-                <tr><td>Duration</td><td>{{ video.duration or '-' }}</td></tr>
+                <tr><td>Duration</td><td>{% if video.duration %}{{ video.duration }} min{% else %}-{% endif %}</td></tr>
                 <tr><td>Maker</td><td>{{ video.maker or '-' }}</td></tr>
                 <tr><td>Label</td><td>{{ video.label or '-' }}</td></tr>
-                {% if video.search_url %}
-                <tr><td>Search</td><td><a href="{{ video.search_url }}" target="_blank">clg55</a></td></tr>
-                {% endif %}
             </table>
+
+            <div class="btn-group" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+                {% if video.detail_url %}
+                <a href="{{ video.detail_url }}" target="_blank" role="button" class="secondary outline" style="font-size:0.85rem;">
+                    &#8599; View on JavLibrary
+                </a>
+                {% endif %}
+                {% if video.search_url %}
+                <a href="{{ video.search_url }}" target="_blank" role="button" class="secondary outline" style="font-size:0.85rem;">
+                    &#8599; Search Magnets (clg55)
+                </a>
+                {% endif %}
+            </div>
 
             {% if rankings %}
             <p>
@@ -30,8 +40,11 @@
             </p>
             {% endif %}
 
-            <a href="/videos/{{ video.code }}/edit" role="button"
-               hx-get="/videos/{{ video.code }}/edit" hx-target="closest article" hx-swap="outerHTML">Edit</a>
+            <div style="display:flex; gap:0.5rem;">
+                <a href="/videos/{{ video.code }}/edit" role="button"
+                   hx-get="/videos/{{ video.code }}/edit" hx-target="closest article" hx-swap="outerHTML">Edit</a>
+                {% include "favorite_btn.html" %}
+            </div>
         </div>
     </div>
 
@@ -39,7 +52,12 @@
     <div class="actress-list">
     {% for a in actresses %}
         <span class="actress-tag">
-            <a href="/actresses?q={{ a.name }}" style="color:inherit;">{{ a.name }}</a>
+            {% if a.actress_id %}
+            <a href="https://www.javlibrary.com/cn/vl_star.php?s={{ a.actress_id }}" target="_blank" rel="noopener" style="color:inherit;">{{ a.name }}</a>
+            {% else %}
+            {{ a.name }}
+            {% endif %}
+            <a href="/actresses/{{ a.name }}" title="View in library" style="color:inherit;font-size:0.75rem;margin-left:0.15rem;text-decoration:none;">&#128269;</a>
         </span>
     {% endfor %}
     </div>
@@ -49,9 +67,17 @@
     {% if magnets %}
     <ul>
     {% for m in magnets %}
-        <li class="magnet-link">
-            <a href="{{ m.magnet }}">{{ m.magnet[:80] }}...</a>
-            <small>({{ m.source }}, {{ m.created_at }})</small>
+        <li class="magnet-link" style="margin-bottom:0.75rem;">
+            {% if m.title %}<strong>{{ m.title }}</strong><br>{% endif %}
+            <a href="{{ m.magnet }}">{{ m.magnet[:80] }}...</a><br>
+            <small>
+                {% if m.size %}Size: {{ m.size }} &middot; {% endif %}
+                {% if m.magnet_date %}Date: {{ m.magnet_date }} &middot; {% endif %}
+                {% if m.download_count %}Downloads: {{ m.download_count }} &middot; {% endif %}
+                {{ m.source }}, {{ m.created_at }}
+            </small>
+            <button class="copy-magnet-btn outline secondary" style="font-size:0.7rem; padding:0.1rem 0.4rem;"
+                    data-magnet="{{ m.magnet }}">Copy</button>
         </li>
     {% endfor %}
     </ul>
@@ -59,4 +85,5 @@
     <p>No magnets found.</p>
     {% endif %}
 </article>
+
 {% endblock %}

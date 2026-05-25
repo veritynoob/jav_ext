@@ -28,11 +28,14 @@
         .magnet-link { word-break: break-all; font-size: 0.85rem; font-family: monospace; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
         .video-card { border: 1px solid var(--pico-muted-border-color); border-radius: 8px; overflow: hidden; }
-        .video-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .video-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; object-position: right; display: block; }
         .video-card .info { padding: 0.5rem; }
         .video-card .code { font-weight: bold; font-size: 0.9rem; }
         .video-card .title { font-size: 0.8rem; color: var(--pico-muted-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .video-card .actress { font-size: 0.75rem; color: var(--pico-muted-color); margin-top: 0.15rem; }
         .video-card .meta { font-size: 0.8rem; margin-top: 0.25rem; display: flex; justify-content: space-between; }
+        .video-card.visited { opacity: 0.6; }
+        .video-card.visited img { filter: grayscale(30%); }
     </style>
 </head>
 <body>
@@ -41,6 +44,7 @@
         <nav>
             <a href="/videos" hx-get="/videos" hx-target="#main" hx-push-url="true">Videos</a>
             <a href="/actresses" hx-get="/actresses" hx-target="#main" hx-push-url="true">Actresses</a>
+            <a href="/favorites" hx-get="/favorites" hx-target="#main" hx-push-url="true">Favorites</a>
             <a href="/tasks" hx-get="/tasks" hx-target="#main" hx-push-url="true">Tasks</a>
         </nav>
         <hr>
@@ -58,5 +62,76 @@
         </div>
     </main>
     <div id="toast"></div>
+    <script>
+    (function() {
+        var STORAGE_KEY = 'jav_visited_codes';
+
+        function getVisited() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+            catch(e) { return []; }
+        }
+
+        function markVisited(code) {
+            if (!code) return;
+            var visited = getVisited();
+            if (visited.indexOf(code) === -1) {
+                visited.push(code);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(visited));
+            }
+            applyVisitedStyles();
+        }
+
+        function applyVisitedStyles() {
+            var visited = getVisited();
+            document.querySelectorAll('.video-card').forEach(function(card) {
+                var link = card.querySelector('a[href*="/videos/"]');
+                if (link) {
+                    var code = link.getAttribute('href').split('/videos/')[1];
+                    if (code && visited.indexOf(code) !== -1) {
+                        card.classList.add('visited');
+                    }
+                }
+            });
+        }
+
+        // Mark visited on click
+        document.addEventListener('click', function(e) {
+            var card = e.target.closest('.video-card');
+            if (card) {
+                var link = card.querySelector('a[href*="/videos/"]');
+                if (link) {
+                    var code = link.getAttribute('href').split('/videos/')[1];
+                    if (code) markVisited(code);
+                }
+            }
+        });
+
+        // Apply styles on load and after HTMX swaps
+        document.addEventListener('DOMContentLoaded', applyVisitedStyles);
+        document.addEventListener('htmx:afterSwap', function(e) {
+            if (e.detail.target.matches('#main, #video-table')) {
+                applyVisitedStyles();
+            }
+        });
+
+        // Copy magnet button (delegated)
+        document.addEventListener('click', function(e) {
+            if (!e.target.matches('.copy-magnet-btn')) return;
+            var magnet = e.target.getAttribute('data-magnet');
+            navigator.clipboard.writeText(magnet).then(function() {
+                var orig = e.target.textContent;
+                e.target.textContent = 'Copied!';
+                e.target.className = e.target.className.replace(/ outline secondary/g, '');
+                setTimeout(function() {
+                    e.target.textContent = orig;
+                    e.target.className += ' outline secondary';
+                }, 1500);
+            }).catch(function() {
+                e.target.textContent = 'Failed';
+                setTimeout(function() { e.target.textContent = 'Copy'; }, 1500);
+            });
+        });
+    })();
+    </script>
 </body>
 </html>
