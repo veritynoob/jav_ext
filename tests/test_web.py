@@ -11,7 +11,7 @@ def web_db_path(tmp_path, monkeypatch):
     monkeypatch.setattr("src.web.routes.dashboard.get_db_path", lambda: db_path)
     monkeypatch.setattr("src.web.routes.videos.get_db_path", lambda: db_path)
     monkeypatch.setattr("src.web.routes.actresses.get_db_path", lambda: db_path)
-    monkeypatch.setattr("src.web.routes.magnets.get_db_path", lambda: db_path)
+    monkeypatch.setattr("src.web.routes.favorites.get_db_path", lambda: db_path)
     return db_path
 
 
@@ -189,6 +189,44 @@ class TestVideos:
         assert "HX-Trigger" in resp.headers
         assert "Saved successfully" in resp.headers["HX-Trigger"]
 
+    def test_favorite_toggle(self, auth_client):
+        resp = auth_client.post("/videos/TEST-001/favorite")
+        assert resp.status_code == 200
+        assert "★" in resp.text
+        resp = auth_client.post("/videos/TEST-001/favorite")
+        assert resp.status_code == 200
+        assert "☆" in resp.text
+
+    def test_favorite_appears_on_detail(self, auth_client):
+        auth_client.post("/videos/TEST-001/favorite")
+        resp = auth_client.get("/videos/TEST-001")
+        assert "★" in resp.text
+
+    def test_video_delete_redirects(self, auth_client):
+        resp = auth_client.post("/videos/TEST-003/delete", follow_redirects=False)
+        assert resp.status_code == 302
+        assert resp.headers["location"] == "/videos"
+
+    def test_deleted_video_not_in_list(self, auth_client):
+        auth_client.post("/videos/TEST-003/delete")
+        resp = auth_client.get("/videos")
+        assert "TEST-003" not in resp.text
+
+    def test_deleted_video_returns_404(self, auth_client):
+        auth_client.post("/videos/TEST-002/delete")
+        resp = auth_client.get("/videos/TEST-002")
+        assert resp.status_code == 404
+
+    def test_video_detail_shows_actress_jav_link(self, auth_client):
+        from src.db import save_actresses, get_db_path
+        import sqlite3
+        db_path = get_db_path()
+        conn = sqlite3.connect(db_path)
+        save_actresses(conn, "TEST-001", [("Alice", "alice123")])
+        conn.close()
+        resp = auth_client.get("/videos/TEST-001")
+        assert "vl_star.php?s=alice123" in resp.text
+
 
 class TestActresses:
     def test_actress_list_returns_200(self, auth_client):
@@ -229,6 +267,28 @@ class TestTasks:
         resp = auth_client.post("/tasks/backfill")
         assert resp.status_code == 200
         assert "HX-Trigger" in resp.headers
+
+
+class TestFavorites:
+    def test_favorites_page_returns_200(self, auth_client):
+        resp = auth_client.get("/favorites")
+        assert resp.status_code == 200
+
+    def test_favorites_empty_state(self, auth_client):
+        resp = auth_client.get("/favorites")
+        assert "No favorites yet" in resp.text
+
+    def test_favorites_shows_favorited(self, auth_client):
+        auth_client.post("/videos/TEST-001/favorite")
+        resp = auth_client.get("/favorites")
+        assert "TEST-001" in resp.text
+        assert "TEST-002" not in resp.text
+
+    def test_favorites_htmx_returns_content(self, auth_client):
+        auth_client.post("/videos/TEST-001/favorite")
+        resp = auth_client.get("/favorites", headers={"HX-Request": "true"})
+        assert resp.status_code == 200
+        assert "video-grid" in resp.text.lower()
 
 
 class TestErrorPages:
