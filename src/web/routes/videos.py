@@ -28,7 +28,7 @@ async def video_list(
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:
-        where_clauses = []
+        where_clauses = ["v.deleted=0"]
         params = []
 
         if q:
@@ -36,36 +36,31 @@ async def video_list(
             params.extend([f"%{q}%", f"%{q}%"])
 
         if list_type:
-            where_clauses.append("r.list_type = ?")
+            where_clauses.append("v.code IN (SELECT video_code FROM rankings WHERE list_type = ?)")
             params.append(list_type)
 
         where_sql = ""
         if where_clauses:
             where_sql = "WHERE " + " AND ".join(where_clauses)
 
-        count_sql = f"""
-            SELECT COUNT(DISTINCT v.code) as c FROM videos v
-            LEFT JOIN rankings r ON v.code = r.video_code
-            {where_sql}
-        """
+        count_sql = f"SELECT COUNT(*) as c FROM videos v {where_sql}"
         total = conn.execute(count_sql, params).fetchone()["c"]
         total_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
         offset = (page - 1) * PAGE_SIZE
 
         data_sql = f"""
-            SELECT DISTINCT v.code, v.title, v.cover_url, v.score, v.date, v.maker,
-                   v.created_at, r.list_type, r.rank
+            SELECT v.code, v.title, v.cover_url, v.score, v.date, v.maker,
+                   v.created_at,
+                   (SELECT a.name FROM actresses a WHERE a.video_code = v.code ORDER BY a.name LIMIT 1) as first_actress,
+                   (SELECT COUNT(*) FROM favorites f WHERE f.video_code = v.code) as is_favorited
             FROM videos v
-            LEFT JOIN rankings r ON v.code = r.video_code
             {where_sql}
             ORDER BY v.{sort} {order}
             LIMIT ? OFFSET ?
         """
         rows = conn.execute(data_sql, params + [PAGE_SIZE, offset]).fetchall()
 
-        template_name = "videos.html"
-        if request.headers.get("HX-Request"):
-            template_name = "videos_partial.html"
+        template_name = "videos_content.html" if request.headers.get("HX-Request") else "videos.html"
 
         return templates.TemplateResponse(request, template_name, {
             "videos": rows,
@@ -87,16 +82,20 @@ async def video_detail(request: Request, code: str):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:
-        video = conn.execute("SELECT * FROM videos WHERE code=?", (code,)).fetchone()
+        video = conn.execute(
+            "SELECT v.*, (SELECT COUNT(*) FROM favorites f WHERE f.video_code = v.code) as is_favorited "
+            "FROM videos v WHERE v.code=? AND v.deleted=0", (code,)
+        ).fetchone()
         if not video:
             return templates.TemplateResponse(request, "404.html", status_code=404)
 
         actresses = conn.execute(
-            "SELECT name FROM actresses WHERE video_code=? ORDER BY name", (code,)
+            "SELECT name, actress_id FROM actresses WHERE video_code=? ORDER BY name", (code,)
         ).fetchall()
 
         magnets = conn.execute(
-            "SELECT magnet, source, created_at FROM magnets WHERE video_code=? ORDER BY created_at DESC", (code,)
+            "SELECT magnet, source, title, size, magnet_date, download_count, created_at "
+            "FROM magnets WHERE video_code=? ORDER BY created_at DESC", (code,)
         ).fetchall()
 
         rankings = conn.execute(
@@ -108,6 +107,7 @@ async def video_detail(request: Request, code: str):
             "actresses": actresses,
             "magnets": magnets,
             "rankings": rankings,
+            "is_favorited": bool(video["is_favorited"]),
         })
     finally:
         conn.close()
@@ -156,16 +156,55 @@ async def video_edit_save(request: Request, code: str):
         conn.commit()
 
         if request.headers.get("HX-Request"):
-            video = conn.execute("SELECT * FROM videos WHERE code=?", (code,)).fetchone()
-            actresses = conn.execute("SELECT name FROM actresses WHERE video_code=? ORDER BY name", (code,)).fetchall()
-            magnets = conn.execute("SELECT magnet, source, created_at FROM magnets WHERE video_code=?", (code,)).fetchall()
+            video = conn.execute(
+                "SELECT v.*, (SELECT COUNT(*) FROM favorites f WHERE f.video_code = v.code) as is_favorited "
+                "FROM videos v WHERE v.code=? AND v.deleted=0", (code,)
+            ).fetchone()
+            actresses = conn.execute(
+                "SELECT name, actress_id FROM actresses WHERE video_code=? ORDER BY name", (code,)
+            ).fetchall()
+            magnets = conn.execute(
+                "SELECT magnet, source, title, size, magnet_date, download_count, created_at "
+                "FROM magnets WHERE video_code=?", (code,)
+            ).fetchall()
             rankings = conn.execute("SELECT list_type, rank FROM rankings WHERE video_code=?", (code,)).fetchall()
             resp = templates.TemplateResponse(request, "video_detail.html", {
                 "video": video, "actresses": actresses, "magnets": magnets, "rankings": rankings,
+                "is_favorited": bool(video["is_favorited"]),
             })
             resp.headers["HX-Trigger"] = '{"toast": {"msg": "Saved successfully", "type": "success"}}'
             return resp
 
         return RedirectResponse(url=f"/videos/{code}", status_code=302)
+    finally:
+        conn.close()
+
+
+@router.post("/{code}/favorite")
+async def video_favorite_toggle(request: Request, code: str):
+    from src.db import toggle_favorite
+
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    try:
+        is_favorited = toggle_favorite(conn, code)
+        return templates.TemplateResponse(request, "favorite_btn.html", {
+            "code": code,
+            "is_favorited": is_favorited,
+        })
+    finally:
+        conn.close()
+
+
+@router.post("/{code}/delete")
+async def video_delete(code: str):
+    from fastapi.responses import RedirectResponse
+    from src.db import soft_delete_video
+
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    try:
+        soft_delete_video(conn, code)
+        return RedirectResponse(url="/videos", status_code=302)
     finally:
         conn.close()
