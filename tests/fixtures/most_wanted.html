@@ -1,38 +1,100 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Most Wanted - JavLibrary</title></head>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="JAVLibrary - Most Wanted">
+<meta name="keywords" content="JAV, Japanese Adult Video, Most Wanted">
+<title>Most Wanted - JavLibrary</title>
+<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/javlibrary.css?v=20240115">
+<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/star_rater.css">
+<script src="https://www.javlibrary.com/js/jquery-3.7.1.min.js"></script>
+<script src="https://www.javlibrary.com/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.javlibrary.com/js/jquery.rateyo.min.js"></script>
+<script>
+  $(function() {
+    $(".star-rating").each(function(){ $(this).rateYo({rating: parseFloat($(this).attr("data-rating")), starWidth: "16px", readOnly: true}); });
+  });
+</script>
+</head>
 <body>
-<div class="videos">
-  <div class="video">
-    <div class="id">ABC-001</div>
-    <a href="/cn/?v=javli4q4v4">Sample Title One</a>
-    <img data-src="//pics.dmm.co.jp/digital/video/abc001/abc001pl.jpg" src="//pics.dmm.co.jp/digital/video/abc001/abc001ps.jpg" />
-    <div class="date">2026-01-15</div>
-    <div class="score">(9.2)</div>
-    <div class="star">
-      <a href="/cn/star/a1">Actress Alpha</a>
-      <a href="/cn/star/a2">Actress Beta</a>
+<div id="wrapper">
+  <div id="header">
+    <div class="container">
+      <div class="header-logo">
+        <a href="https://www.javlibrary.com/cn/">
+          <img src="https://www.javlibrary.com/images/logo.png" alt="JavLibrary" width="200" height="40">
+        </a>
+      </div>
+      <div id="headmenu">
+        <ul class="nav nav-pills">
+          <li><a href="https://www.javlibrary.com/cn/vl_newrelease.php">最新</a></li>
+          <li class="active"><a href="https://www.javlibrary.com/cn/vl_mostwanted.php">想要</a></li>
+          <li><a href="https://www.javlibrary.com/cn/vl_bestrated.php">高分</a></li>
+          <li><a href="https://www.javlibrary.com/cn/vl_star.php">女优</a></li>
+        </ul>
+      </div>
     </div>
   </div>
-  <div class="video">
-    <div class="id">XYZ-002</div>
-    <a href="/cn/?v=javli5r5w5">Another Great Video</a>
-    <img src="https://pics.dmm.co.jp/digital/video/xyz002/xyz002pl.jpg" />
-    <div class="date">2026-02-20</div>
-    <div class="review">8.5</div>
-    <div class="actress">
-      <a href="/cn/actress/c1">Actress Gamma</a>
+  <div id="content" class="container">
+    <div id="leftcolumn" class="col-md-3" style="display:none;">
+      <!-- sidebar navigation -- not parsed by scraper -->
+    </div>
+    <div id="rightcolumn" class="col-md-9">
+      <div id="video_mostwanted">
+        <div class="page-header">
+          <h2>想要列表 (Most Wanted)</h2>
+          <p class="text-muted">共 3 个结果</p>
+        </div>
+        <div class="videos">
+          <div class="video" id="vid_javli4q4v4">
+            <a href="./javli4q4v4.html" title="ABC-001 Full Featured Video">
+              <div class="id">ABC-001</div>
+              <img border="0" height="200" src="https://pics.dmm.co.jp/digital/video/abc001/abc001pl.jpg" width="147" />
+              <div class="title">Full Featured Video</div>
+            </a>
+            <div class="toolbar">
+              <a class="icn_want" id="javli4q4v4" title="我想要"></a>
+              <a class="icn_seen" id="javli4q4v4" title="看过了"></a>
+              <a class="icn_have" id="javli4q4v4" title="已拥有"></a>
+            </div>
+          </div>
+          <div class="video" id="vid_javli5r5w5">
+            <a href="./javli5r5w5.html" title="XYZ-002 Minimal Video - No Extra Metadata">
+              <div class="id">XYZ-002</div>
+            </a>
+            <div class="toolbar">
+              <a class="icn_want" id="javli5r5w5"></a>
+            </div>
+          </div>
+          <div class="video" id="vid_javli6s6x6">
+            <a href="./javli6s6x6.html" title="NOIMG-003 Video With Different Image">
+              <div class="id">NOIMG-003</div>
+              <img border="0" height="200" onerror="ThumbError(this, 'https://t2.pixhost.to/thumbs/7623/placeholder.jpg');" src="https://pics.dmm.co.jp/digital/video/noimg003/noimg003pl.jpg" width="147" />
+              <div class="title">Video With Different Image</div>
+            </a>
+            <div class="toolbar">
+              <a class="icn_want" id="javli6s6x6"></a>
+              <a class="icn_seen" id="javli6s6x6"></a>
+            </div>
+          </div>
+        </div>
+        <div class="pagination">
+          <ul class="pager">
+            <li class="disabled"><a>上一页</a></li>
+            <li class="active"><a>1</a></li>
+            <li><a href="?page=2">2</a></li>
+            <li><a href="?page=2">下一页</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="video">
-    <div class="id">NOIMG-003</div>
-    <a href="/cn/?v=javli6s6x6">Video Without Cover</a>
-    <div class="date">2026-03-10</div>
-    <div class="score">7.8</div>
-    <div class="cast">
-      <a href="/cn/cast/d1">Actress Delta</a>
-      <a href="/cn/cast/d2">Actress Epsilon</a>
-      <a href="/cn/cast/d3">Actress Zeta</a>
+  <div id="footage">
+    <div class="container">
+      <p class="text-muted text-center">JavLibrary &copy; 2024</p>
     </div>
   </div>
 </div>

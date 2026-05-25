@@ -1,27 +1,82 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Top Rated - JavLibrary</title></head>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="JAVLibrary - Top Rated">
+<meta name="keywords" content="JAV, Japanese Adult Video, Best Rated">
+<title>Top Rated - JavLibrary</title>
+<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/javlibrary.css?v=20240115">
+<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/star_rater.css">
+<script src="https://www.javlibrary.com/js/jquery-3.7.1.min.js"></script>
+<script src="https://www.javlibrary.com/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.javlibrary.com/js/jquery.rateyo.min.js"></script>
+</head>
 <body>
-<div class="videos">
-  <div class="video">
-    <div class="id">TOP-001</div>
-    <a href="/cn/?v=javli7t7y7">Top Rated Classic</a>
-    <img data-src="//pics.dmm.co.jp/digital/video/top001/top001pl.jpg" />
-    <div class="date">2025-11-01</div>
-    <div class="score">(9.8)</div>
-    <div class="star">
-      <a href="/cn/star/t1">Star One</a>
+<div id="wrapper">
+  <div id="header">
+    <div class="container">
+      <div class="header-logo">
+        <a href="https://www.javlibrary.com/cn/"><img src="https://www.javlibrary.com/images/logo.png" alt="JavLibrary" width="200" height="40"></a>
+      </div>
+      <div id="headmenu">
+        <ul class="nav nav-pills">
+          <li><a href="https://www.javlibrary.com/cn/vl_newrelease.php">最新</a></li>
+          <li><a href="https://www.javlibrary.com/cn/vl_mostwanted.php">想要</a></li>
+          <li class="active"><a href="https://www.javlibrary.com/cn/vl_bestrated.php">高分</a></li>
+        </ul>
+      </div>
     </div>
   </div>
-  <div class="video">
-    <div class="id">TOP-002</div>
-    <a href="/cn/?v=javli8u8z8">Another Top Pick</a>
-    <img src="https://pics.dmm.co.jp/digital/video/top002/top002pl.jpg" />
-    <div class="date">2025-12-15</div>
-    <div class="review">9.5</div>
-    <div class="star">
-      <a href="/cn/star/t2">Star Two</a>
-      <a href="/cn/star/t3">Star Three</a>
+  <div id="content" class="container">
+    <div id="leftcolumn" class="col-md-3" style="display:none;">
+      <!-- sidebar -->
+    </div>
+    <div id="rightcolumn" class="col-md-9">
+      <div id="video_bestrated">
+        <div class="page-header">
+          <h2>高分列表 (Top Rated)</h2>
+        </div>
+        <div class="videos">
+          <div class="video" id="vid_javli7t7y7">
+            <a href="./javli7t7y7.html" title="TOP-001 Top Rated Classic">
+              <div class="id">TOP-001</div>
+              <img border="0" height="200" onerror="ThumbError(this,'https://t2.pixhost.to/thumbs/7623/placeholder.jpg');" src="https://pics.dmm.co.jp/digital/video/top001/top001pl.jpg" width="147" />
+              <div class="title">Top Rated Classic</div>
+            </a>
+            <div class="toolbar">
+              <a class="icn_want" id="javli7t7y7"></a>
+              <a class="icn_seen" id="javli7t7y7"></a>
+              <a class="icn_star" id="javli7t7y7"></a>
+            </div>
+          </div>
+          <div class="video" id="vid_javli8u8z8">
+            <a href="./javli8u8z8.html" title="TOP-002 Another Top Pick">
+              <div class="id">TOP-002</div>
+              <img border="0" height="200" src="https://pics.dmm.co.jp/digital/video/top002/top002pl.jpg" width="147" />
+              <div class="title">Another Top Pick</div>
+            </a>
+            <div class="toolbar">
+              <a class="icn_want" id="javli8u8z8"></a>
+            </div>
+          </div>
+        </div>
+        <div class="pagination">
+          <ul class="pager">
+            <li class="disabled"><a>上一页</a></li>
+            <li class="active"><a>1</a></li>
+            <li><a href="?page=2">2</a></li>
+            <li><a href="?page=2">下一页</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="footage">
+    <div class="container">
+      <p class="text-muted text-center">JavLibrary &copy; 2024</p>
     </div>
   </div>
 </div>

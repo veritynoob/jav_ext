@@ -27,6 +27,7 @@ def init_db(db_path=None):
             maker TEXT,
             label TEXT,
             score REAL,
+            detail_url TEXT,
             search_url TEXT,
             created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
             updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
@@ -59,25 +60,38 @@ def init_db(db_path=None):
             UNIQUE(video_code, magnet)
         );
     """)
+    # Add detail_url column if it doesn't exist (migration for existing DBs)
+    try:
+        conn.execute("ALTER TABLE videos ADD COLUMN detail_url TEXT")
+    except sqlite3.OperationalError:
+        pass
+    # Migrations for magnet metadata columns
+    for col in [("title", "TEXT"), ("size", "TEXT"), ("magnet_date", "TEXT"), ("download_count", "TEXT")]:
+        try:
+            conn.execute(f"ALTER TABLE magnets ADD COLUMN {col[0]} {col[1]}")
+        except sqlite3.OperationalError:
+            pass
     conn.commit()
     return conn
 
 
 def upsert_video(conn, video):
     conn.execute("""
-        INSERT INTO videos (code, title, cover_url, date, duration, maker, label, score)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO videos (code, title, cover_url, detail_url, date, duration, maker, label, score)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(code) DO UPDATE SET
-            title=COALESCE(excluded.title, videos.title),
-            cover_url=COALESCE(excluded.cover_url, videos.cover_url),
-            date=COALESCE(excluded.date, videos.date),
-            duration=COALESCE(excluded.duration, videos.duration),
-            maker=COALESCE(excluded.maker, videos.maker),
-            label=COALESCE(excluded.label, videos.label),
-            score=COALESCE(excluded.score, videos.score),
+            title=COALESCE(NULLIF(excluded.title, ''), videos.title),
+            cover_url=COALESCE(NULLIF(excluded.cover_url, ''), videos.cover_url),
+            detail_url=COALESCE(NULLIF(excluded.detail_url, ''), videos.detail_url),
+            date=COALESCE(NULLIF(excluded.date, ''), videos.date),
+            duration=COALESCE(NULLIF(excluded.duration, ''), videos.duration),
+            maker=COALESCE(NULLIF(excluded.maker, ''), videos.maker),
+            label=COALESCE(NULLIF(excluded.label, ''), videos.label),
+            score=COALESCE(NULLIF(excluded.score, 0), videos.score),
             updated_at=datetime('now','localtime')
     """, (
         video.get("code"), video.get("title"), video.get("cover_url"),
+        video.get("detail_url"),
         video.get("date"), video.get("duration"), video.get("maker"),
         video.get("label"), video.get("score"),
     ))
@@ -108,21 +122,43 @@ def save_actresses(conn, video_code, names):
 
 
 def save_magnets(conn, video_code, magnets):
-    for magnet in magnets:
-        if magnet.strip():
-            conn.execute(
-                "INSERT OR IGNORE INTO magnets (video_code, magnet, source) VALUES (?, ?, ?)",
-                (video_code, magnet.strip(), "clg55")
-            )
+    for m in magnets:
+        magnet = m.get("magnet", "").strip() if isinstance(m, dict) else m.strip()
+        if not magnet:
+            continue
+        title = m.get("title", "") if isinstance(m, dict) else ""
+        size = m.get("size", "") if isinstance(m, dict) else ""
+        magnet_date = m.get("magnet_date", "") if isinstance(m, dict) else ""
+        download_count = m.get("download_count", "") if isinstance(m, dict) else ""
+        conn.execute(
+            "INSERT OR IGNORE INTO magnets (video_code, magnet, source, title, size, magnet_date, download_count) "
+            "VALUES (?, ?, 'clg55', ?, ?, ?, ?)",
+            (video_code, magnet, title, size, magnet_date, download_count)
+        )
     conn.commit()
+
+
+def has_video_detail(conn, code):
+    """Return True if the video already has detail data.
+
+    Checks multiple detail-only fields (date, duration, maker) because some
+    videos legitimately lack individual fields (e.g. no rating score).
+    """
+    row = conn.execute(
+        "SELECT date, duration, maker FROM videos WHERE code=?", (code,)
+    ).fetchone()
+    if row is None:
+        return False
+    return bool(row["date"]) or bool(row["duration"]) or bool(row["maker"])
 
 
 def get_videos_missing_magnets(conn, days=60, limit=20):
     rows = conn.execute("""
         SELECT code FROM videos
         WHERE code NOT IN (SELECT DISTINCT video_code FROM magnets)
-        AND created_at >= datetime('now', 'localtime', '-' || ? || ' days')
-        ORDER BY created_at DESC
+        AND date IS NOT NULL AND date != ''
+        AND date >= date('now', 'localtime', '-' || ? || ' days')
+        ORDER BY date DESC
         LIMIT ?
     """, (days, limit)).fetchall()
     return [row["code"] for row in rows]

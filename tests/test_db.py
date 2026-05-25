@@ -131,8 +131,11 @@ def test_save_magnets_ignores_duplicate(conn):
 
 def test_get_videos_missing_magnets(conn):
     from src.db import upsert_video, save_magnets, get_videos_missing_magnets
-    upsert_video(conn, {"code": "OLD-001"})
-    upsert_video(conn, {"code": "NEW-001"})
+    from datetime import date, timedelta
+    today = date.today().isoformat()
+    recent = (date.today() - timedelta(days=10)).isoformat()
+    upsert_video(conn, {"code": "OLD-001", "date": recent})
+    upsert_video(conn, {"code": "NEW-001", "date": today})
     save_magnets(conn, "OLD-001", ["magnet:?xt=urn:btih:AAA"])
 
     result = get_videos_missing_magnets(conn, days=60, limit=20)
