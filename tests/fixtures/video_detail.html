@@ -1,99 +1,19 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="ABC-001 Full Featured Video - JavLibrary">
-<title>ABC-001 Full Featured Video - JavLibrary</title>
-<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/javlibrary.css?v=20240115">
-<link rel="stylesheet" type="text/css" href="https://www.javlibrary.com/css/star_rater.css">
-<script src="https://www.javlibrary.com/js/jquery-3.7.1.min.js"></script>
-<script src="https://www.javlibrary.com/js/bootstrap.bundle.min.js"></script>
-<script src="https://www.javlibrary.com/js/jquery.rateyo.min.js"></script>
-<script>
-  $(function() {
-    $(".star-rating").each(function(){ $(this).rateYo({rating: 4, starWidth: "16px", readOnly: true}); });
-  });
-</script>
-</head>
+<html>
 <body>
-<div id="wrapper">
-  <div id="header">
-    <div class="container">
-      <div class="header-logo">
-        <a href="https://www.javlibrary.com/cn/"><img src="https://www.javlibrary.com/images/logo.png" alt="JavLibrary"></a>
-      </div>
-      <div id="headmenu">
-        <ul class="nav nav-pills">
-          <li><a href="https://www.javlibrary.com/cn/vl_newrelease.php">最新</a></li>
-          <li><a href="https://www.javlibrary.com/cn/vl_mostwanted.php">想要</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div id="content" class="container">
-    <div id="video_info" class="row">
-      <div id="video_id" class="item">
-        <table><tr><td class="header">识别码:</td><td class="text">ABC-001</td></tr></table>
-      </div>
-      <div id="video_title" class="item">
-        <h3 class="post-title">ABC-001 Full Featured Video</h3>
-      </div>
-      <div id="video_date" class="item">
-        <table><tr><td class="header">发行日期:</td><td class="text">2024-06-15</td></tr></table>
-      </div>
-      <div id="video_length" class="item">
-        <table><tr><td class="header">长度:</td><td><span class="text">120</span>分钟</td></tr></table>
-      </div>
-      <div id="video_maker" class="item">
-        <table><tr><td class="header">制作商:</td><td class="text"><a href="/cn/maker.php?id=abc">Studio X</a></td></tr></table>
-      </div>
-      <div id="video_label" class="item">
-        <table><tr><td class="header">发行商:</td><td class="text"><a href="/cn/label.php?id=xyz">Label Y</a></td></tr></table>
-      </div>
-      <div id="video_genres" class="item">
-        <table><tr><td class="header">类别:</td><td class="text">
-          <span class="genre"><a href="https://www.javlibrary.com/cn/vl_genre.php?g=1">类别A</a></span>
-          <span class="genre"><a href="https://www.javlibrary.com/cn/vl_genre.php?g=2">类别B</a></span>
-        </td></tr></table>
-      </div>
-      <div class="score">(8.52)</div>
-      <div id="video_review" class="item">
-        <div class="star-rating rater-0 star {split:2} star-rating-applied star-rating-live star-rating-on" data-rating="4">
-          <a title="1">1</a>
-          <a title="2">2</a>
-          <a title="3">3</a>
-          <a title="4">4</a>
-          <a title="5">5</a>
-        </div>
-      </div>
-      <div id="video_cast" class="item">
-        <span class="cast" id="cast01">
-          <span class="star"><a href="vl_star.php?s=aaa" rel="tag">Actress One</a></span>
-        </span>
-        <span class="cast" id="cast02">
-          <span class="star"><a href="vl_star.php?s=bbb" rel="tag">Actress Two</a></span>
-        </span>
-      </div>
-      <!-- Star rating widget noise -->
-      <div class="star-rating rater-0 star {split:2} star-rating-applied star-rating-live star-rating-on">
-        <a title="1">1</a>
-      </div>
-      <div class="star-rating rater-0 star {split:2} star-rating-applied star-rating-live star-rating-on">
-        <a title="2">2</a>
-      </div>
-      <div id="video_jacket">
-        <img id="video_jacket_img" src="//pics.javlibrary.com/abc-123.jpg">
-      </div>
-    </div>
-  </div>
-  <div id="footage">
-    <div class="container">
-      <p class="text-muted text-center">JavLibrary &copy; 2024</p>
-    </div>
-  </div>
+<div id="video_date"><table><tr><td class="text">2024-06-15</td></tr></table></div>
+<div id="video_length"><table><tr><td><span class="text">120</span></td></tr></table></div>
+<div id="video_maker"><table><tr><td class="text"><a href="/m.php?id=1">Studio X</a></td></tr></table></div>
+<div id="video_label"><table><tr><td class="text"><a href="/l.php?id=2">Label Y</a></td></tr></table></div>
+<div id="video_cast" class="item">
+    <table><tr>
+    <td class="text">
+        <span class="cast"><span class="star"><a href="vl_star.php?s=aaa111" rel="tag">Actress One</a></span></span>
+        <span class="cast"><span class="star"><a href="vl_star.php?s=bbb222" rel="tag">Actress Two</a></span></span>
+    </td>
+    </tr></table>
 </div>
+<div class="score">(8.52)</div>
+<img id="video_jacket_img" src="//pics.javlibrary.com/abc-123.jpg">
 </body>
 </html>

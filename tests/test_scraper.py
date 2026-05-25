@@ -102,7 +102,7 @@ class TestParseDetailPage:
         assert result["label"] == "Label Y"
         # Score in real pages is "(8.52)" — parser extracts numeric part via regex
         assert result["score"] == 8.52
-        assert result["actresses"] == ["Actress One", "Actress Two"]
+        assert result["actresses"] == [("Actress One", "aaa111"), ("Actress Two", "bbb222")]
         # Protocol-relative cover URL resolved to https
         assert result["cover_url"] == "https://pics.javlibrary.com/abc-123.jpg"
 
@@ -353,6 +353,15 @@ class TestParseDetailPageEdgeCases:
     def test_duration_extraction(self):
         html = '<div id="video_length"><span class="text">90</span></div>'
         assert parse_detail_page(html)["duration"] == "90"
+
+    def test_actress_with_href_id(self):
+        html = """
+        <div id="video_cast">
+            <span class="cast"><span class="star"><a href="vl_star.php?s=xyz789" rel="tag">With ID</a></span></span>
+        </div>
+        """
+        result = parse_detail_page(html)
+        assert result["actresses"] == [("With ID", "xyz789")]
 
 
 # =============================================================================
