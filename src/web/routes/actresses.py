@@ -27,7 +27,11 @@ async def actress_list(request: Request, q: str = Query(default="")):
                 LIMIT 200
             """).fetchall()
 
-        return templates.TemplateResponse(request, "actresses.html", {
+        template_name = "actresses.html"
+        if request.headers.get("HX-Request"):
+            template_name = "actresses_partial.html"
+
+        return templates.TemplateResponse(request, template_name, {
             "actresses": rows, "q": q,
         })
     finally:
@@ -43,11 +47,61 @@ async def actress_videos(request: Request, name: str):
         videos = conn.execute("""
             SELECT v.code, v.title, v.score, v.date, v.cover_url
             FROM videos v JOIN actresses a ON v.code = a.video_code
-            WHERE a.name = ? ORDER BY v.date DESC
+            WHERE a.name = ? AND v.deleted=0 ORDER BY v.date DESC
         """, (name,)).fetchall()
 
         return templates.TemplateResponse(request, "actress_videos_partial.html", {
             "name": name, "videos": videos,
+        })
+    finally:
+        conn.close()
+
+
+@router.get("/{name}")
+async def actress_page(
+    request: Request,
+    name: str,
+    sort: str = Query(default="date"),
+    order: str = Query(default="desc"),
+    page: int = Query(default=1, ge=1),
+):
+    valid_sorts = {"code", "title", "score", "date", "created_at"}
+    if sort not in valid_sorts:
+        sort = "date"
+    if order not in ("asc", "desc"):
+        order = "desc"
+
+    PAGE_SIZE = 20
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        count = conn.execute("""
+            SELECT COUNT(*) as c
+            FROM videos v JOIN actresses a ON v.code = a.video_code
+            WHERE a.name = ? AND v.deleted=0
+        """, (name,)).fetchone()["c"]
+        total_pages = max(1, (count + PAGE_SIZE - 1) // PAGE_SIZE)
+        offset = (page - 1) * PAGE_SIZE
+
+        videos = conn.execute("""
+            SELECT v.code, v.title, v.cover_url, v.score, v.date, v.maker, v.created_at
+            FROM videos v JOIN actresses a ON v.code = a.video_code
+            WHERE a.name = ? AND v.deleted=0
+            ORDER BY v.{sort} {order}
+            LIMIT ? OFFSET ?
+        """.format(sort=sort, order=order), (name, PAGE_SIZE, offset)).fetchall()
+
+        template_name = "actress_videos_content.html" if request.headers.get("HX-Request") else "actress_videos.html"
+
+        return templates.TemplateResponse(request, template_name, {
+            "name": name,
+            "videos": videos,
+            "total": count,
+            "page": page,
+            "total_pages": total_pages,
+            "sort": sort,
+            "order": order,
         })
     finally:
         conn.close()

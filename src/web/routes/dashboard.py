@@ -13,29 +13,29 @@ async def dashboard(request: Request):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:
-        total_videos = conn.execute("SELECT COUNT(*) as c FROM videos").fetchone()["c"]
+        total_videos = conn.execute("SELECT COUNT(*) as c FROM videos WHERE deleted=0").fetchone()["c"]
         total_actresses = conn.execute("SELECT COUNT(DISTINCT name) as c FROM actresses").fetchone()["c"]
         today_new = conn.execute(
-            "SELECT COUNT(*) as c FROM videos WHERE date(created_at) = date('now','localtime')"
+            "SELECT COUNT(*) as c FROM videos WHERE date(created_at) = date('now','localtime') AND deleted=0"
         ).fetchone()["c"]
         missing_magnets = conn.execute(
-            "SELECT COUNT(*) as c FROM videos WHERE code NOT IN (SELECT DISTINCT video_code FROM magnets)"
+            "SELECT COUNT(*) as c FROM videos WHERE code NOT IN (SELECT DISTINCT video_code FROM magnets) AND deleted=0"
         ).fetchone()["c"]
 
         recent = conn.execute(
-            "SELECT code, title, score, date, created_at FROM videos ORDER BY created_at DESC LIMIT 10"
+            "SELECT code, title, score, date, created_at FROM videos WHERE deleted=0 ORDER BY created_at DESC LIMIT 10"
         ).fetchall()
 
         top_most_wanted = conn.execute(
             """SELECT v.code, v.title, v.score, r.rank
                FROM rankings r JOIN videos v ON v.code = r.video_code
-               WHERE r.list_type='most_wanted' ORDER BY r.rank LIMIT 10"""
+               WHERE r.list_type='most_wanted' AND v.deleted=0 ORDER BY r.rank LIMIT 10"""
         ).fetchall()
 
         top_rated = conn.execute(
             """SELECT v.code, v.title, v.score, r.rank
                FROM rankings r JOIN videos v ON v.code = r.video_code
-               WHERE r.list_type='top_rated' ORDER BY r.rank LIMIT 10"""
+               WHERE r.list_type='top_rated' AND v.deleted=0 ORDER BY r.rank LIMIT 10"""
         ).fetchall()
 
         return templates.TemplateResponse(request, "dashboard.html", {
