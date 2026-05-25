@@ -23,7 +23,10 @@
 
 <div class="video-grid">
 {% for v in videos %}
-<div class="video-card">
+<div class="video-card" style="position:relative;">
+    <span style="position:absolute;top:0.25rem;right:0.25rem;z-index:2;">
+        {% with code=v.code, is_favorited=v.is_favorited %}{% include "favorite_btn.html" %}{% endwith %}
+    </span>
     <a href="/videos/{{ v.code }}">
         {% if v.cover_url %}
         <img src="{{ v.cover_url }}" alt="{{ v.code }}" loading="lazy">

@@ -45,7 +45,8 @@ async def actress_videos(request: Request, name: str):
     conn.row_factory = sqlite3.Row
     try:
         videos = conn.execute("""
-            SELECT v.code, v.title, v.score, v.date, v.cover_url
+            SELECT v.code, v.title, v.score, v.date, v.cover_url,
+                   (SELECT COUNT(*) FROM favorites f WHERE f.video_code = v.code) as is_favorited
             FROM videos v JOIN actresses a ON v.code = a.video_code
             WHERE a.name = ? AND v.deleted=0 ORDER BY v.date DESC
         """, (name,)).fetchall()
@@ -85,7 +86,8 @@ async def actress_page(
         offset = (page - 1) * PAGE_SIZE
 
         videos = conn.execute("""
-            SELECT v.code, v.title, v.cover_url, v.score, v.date, v.maker, v.created_at
+            SELECT v.code, v.title, v.cover_url, v.score, v.date, v.maker, v.created_at,
+                   (SELECT COUNT(*) FROM favorites f WHERE f.video_code = v.code) as is_favorited
             FROM videos v JOIN actresses a ON v.code = a.video_code
             WHERE a.name = ? AND v.deleted=0
             ORDER BY v.{sort} {order}
