@@ -71,7 +71,11 @@ async def _wait_cf_resolved(page, timeout=60, poll_interval=2):
 async def _load_async(url, *, proxy=None, headless=False, wait=40, timeout=60, poll_interval=2):
     from cloakbrowser import launch_async
 
-    launch_kwargs = {"humanize": True, "headless": headless}
+    launch_kwargs = {
+        "humanize": True,
+        "headless": headless,
+        "args": ["--disable-gpu"],
+    }
     if proxy:
         launch_kwargs["proxy"] = proxy
 
