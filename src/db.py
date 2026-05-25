@@ -59,6 +59,12 @@ def init_db(db_path=None):
             FOREIGN KEY (video_code) REFERENCES videos(code),
             UNIQUE(video_code, magnet)
         );
+
+        CREATE TABLE IF NOT EXISTS favorites (
+            video_code TEXT UNIQUE NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (video_code) REFERENCES videos(code) ON DELETE CASCADE
+        );
     """)
     # Add detail_url column if it doesn't exist (migration for existing DBs)
     try:
@@ -71,6 +77,20 @@ def init_db(db_path=None):
             conn.execute(f"ALTER TABLE magnets ADD COLUMN {col[0]} {col[1]}")
         except sqlite3.OperationalError:
             pass
+
+    # Migration: soft-delete columns on videos
+    for col in [("deleted", "INTEGER NOT NULL DEFAULT 0"), ("deleted_at", "TEXT")]:
+        try:
+            conn.execute(f"ALTER TABLE videos ADD COLUMN {col[0]} {col[1]}")
+        except sqlite3.OperationalError:
+            pass
+
+    # Migration: actress_id on actresses
+    try:
+        conn.execute("ALTER TABLE actresses ADD COLUMN actress_id TEXT")
+    except sqlite3.OperationalError:
+        pass
+
     conn.commit()
     return conn
 
@@ -110,14 +130,43 @@ def save_rankings(conn, list_type, entries):
     conn.commit()
 
 
-def save_actresses(conn, video_code, names):
+def save_actresses(conn, video_code, actresses):
     conn.execute("DELETE FROM actresses WHERE video_code=?", (video_code,))
-    for name in names:
-        if name.strip():
+    for item in actresses:
+        if isinstance(item, str):
+            name, actress_id = item.strip(), None
+        else:
+            name = item[0].strip()
+            actress_id = item[1] if len(item) > 1 and item[1] else None
+        if name:
             conn.execute(
-                "INSERT INTO actresses (video_code, name) VALUES (?, ?)",
-                (video_code, name.strip())
+                "INSERT INTO actresses (video_code, name, actress_id) VALUES (?, ?, ?)",
+                (video_code, name, actress_id)
             )
+    conn.commit()
+
+
+def toggle_favorite(conn, video_code):
+    """Toggle favorite status. Returns new state (True=favorited, False=unfavorited)."""
+    row = conn.execute(
+        "SELECT video_code FROM favorites WHERE video_code=?", (video_code,)
+    ).fetchone()
+    if row:
+        conn.execute("DELETE FROM favorites WHERE video_code=?", (video_code,))
+        conn.commit()
+        return False
+    conn.execute("INSERT INTO favorites (video_code) VALUES (?)", (video_code,))
+    conn.commit()
+    return True
+
+
+def soft_delete_video(conn, video_code):
+    """Soft-delete a video by setting deleted=1."""
+    conn.execute(
+        "UPDATE videos SET deleted=1, deleted_at=datetime('now','localtime'), "
+        "updated_at=datetime('now','localtime') WHERE code=?",
+        (video_code,)
+    )
     conn.commit()
 
 
