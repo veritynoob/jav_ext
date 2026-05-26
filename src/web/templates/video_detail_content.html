@@ -1,0 +1,93 @@
+<style>
+.video-detail { max-width: 1000px; margin: 0 auto; }
+
+@media (max-width: 640px) {
+    .detail-layout { grid-template-columns: 1fr; }
+    .detail-cover img { max-width: 260px; }
+}
+</style>
+
+<article class="video-detail">
+    <div class="detail-layout">
+        <div class="detail-cover">
+            {% if video.cover_url %}
+            <img src="{{ video.cover_url }}" alt="cover">
+            {% endif %}
+            {% with code=video.code, is_favorited=is_favorited %}{% include "favorite_btn.html" %}{% endwith %}
+        </div>
+        <div class="detail-info">
+            <h2>{{ video.code }}</h2>
+            <p class="detail-title">{{ video.title }}</p>
+
+            <table class="info-table">
+                <tr><td>Score</td><td><span style="color:var(--accent);font-weight:600;">{{ video.score }}</span></td></tr>
+                <tr><td>Date</td><td>{{ video.date }}</td></tr>
+                <tr><td>Duration</td><td>{% if video.duration %}{{ video.duration }} min{% else %}-{% endif %}</td></tr>
+                <tr><td>Maker</td><td>{{ video.maker or '-' }}</td></tr>
+                <tr><td>Label</td><td>{{ video.label or '-' }}</td></tr>
+            </table>
+
+            <div class="detail-actions">
+                {% if video.detail_url %}
+                <a href="{{ video.detail_url }}" target="_blank" class="btn btn-outline">&#8599; JavLibrary</a>
+                {% endif %}
+                {% if video.search_url %}
+                <a href="{{ video.search_url }}" target="_blank" class="btn btn-outline">&#8599; Search Magnets</a>
+                {% endif %}
+            </div>
+
+            {% if rankings %}
+            <div style="margin-bottom:1rem;">
+                {% for r in rankings %}
+                <span class="ranking-badge">{{ r.list_type }} #{{ r.rank }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="actress-list" style="margin-bottom:0.75rem;">
+            {% for a in actresses %}
+                <span class="actress-tag">
+                    {% if a.actress_id %}
+                    <a href="https://www.javlibrary.com/cn/vl_star.php?s={{ a.actress_id }}" target="_blank" rel="noopener">{{ a.name }}</a>
+                    {% else %}
+                    {{ a.name }}
+                    {% endif %}
+                    <a href="/actresses/{{ a.name }}" class="actress-ext" title="Local">&#128269;</a>
+                </span>
+            {% endfor %}
+            </div>
+
+            <div class="action-group">
+                <a href="/videos/{{ video.code }}/edit"
+                   hx-get="/videos/{{ video.code }}/edit" hx-target="closest article" hx-swap="outerHTML">Edit</a>
+                <button class="action-delete"
+                        hx-post="/videos/{{ video.code }}/delete"
+                        hx-confirm="Delete {{ video.code }}?">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>Magnets ({{ magnets|length }})</h3>
+        {% if magnets %}
+        <ul class="magnet-list">
+        {% for m in magnets %}
+            <li class="magnet-item">
+                <div class="magnet-top">
+                    {% if m.title %}<span class="magnet-title">{{ m.title }}</span>{% endif %}
+                    {% if m.download_count %}<span class="magnet-stat highlight">&#8595;{{ m.download_count }}</span>{% endif %}
+                    {% if m.size %}<span class="magnet-stat">{{ m.size }}</span>{% endif %}
+                    {% if m.magnet_date %}<span class="magnet-date">{{ m.magnet_date }}</span>{% endif %}
+                </div>
+                <div class="magnet-bottom">
+                    <a href="{{ m.magnet }}" class="magnet-link-text">{{ m.magnet[:80] }}...</a>
+                    <button class="copy-magnet-btn" data-magnet="{{ m.magnet }}">Copy</button>
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">No magnets found.</p>
+        {% endif %}
+    </div>
+</article>

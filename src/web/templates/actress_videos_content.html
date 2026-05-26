@@ -1,44 +1,39 @@
 <h2>{{ name }} ({{ total }} videos)</h2>
 
-<div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
-    <form hx-get="/actresses/{{ name|urlencode }}" hx-target="#main" hx-push-url="true" style="display:flex; gap:0.5rem; align-items:end; flex-wrap:wrap;">
-        <label>Sort
-            <select name="sort" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
-                <option value="date" {% if sort=='date' %}selected{% endif %}>Release Date</option>
-                <option value="created_at" {% if sort=='created_at' %}selected{% endif %}>Added</option>
-                <option value="score" {% if sort=='score' %}selected{% endif %}>Score</option>
-                <option value="code" {% if sort=='code' %}selected{% endif %}>Code</option>
-                <option value="title" {% if sort=='title' %}selected{% endif %}>Title</option>
-            </select>
-        </label>
-        <label>Order
-            <select name="order" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
-                <option value="desc" {% if order=='desc' %}selected{% endif %}>Desc</option>
-                <option value="asc" {% if order=='asc' %}selected{% endif %}>Asc</option>
-            </select>
-        </label>
-        <noscript><button type="submit">Apply</button></noscript>
-    </form>
-</div>
+{% if videos %}
+<form hx-get="/actresses/{{ name|urlencode }}" hx-target="#main" hx-push-url="true" class="controls-bar">
+    <select name="sort" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
+        <option value="date" {% if sort=='date' %}selected{% endif %}>Release Date</option>
+        <option value="created_at" {% if sort=='created_at' %}selected{% endif %}>Added</option>
+        <option value="score" {% if sort=='score' %}selected{% endif %}>Score</option>
+        <option value="code" {% if sort=='code' %}selected{% endif %}>Code</option>
+        <option value="title" {% if sort=='title' %}selected{% endif %}>Title</option>
+    </select>
+    <select name="order" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
+        <option value="desc" {% if order=='desc' %}selected{% endif %}>Desc</option>
+        <option value="asc" {% if order=='asc' %}selected{% endif %}>Asc</option>
+    </select>
+    <noscript><button type="submit">Apply</button></noscript>
+</form>
+{% endif %}
 
 <div class="video-grid">
 {% for v in videos %}
-<div class="video-card" style="position:relative;">
-    <span style="position:absolute;top:0.25rem;right:0.25rem;z-index:2;">
+<div class="video-card">
+    <div class="cover-wrap">
+        <a href="/videos/{{ v.code }}">
+            {% if v.cover_url %}
+            <img src="{{ v.cover_url }}" alt="{{ v.code }}" loading="lazy">
+            {% else %}
+            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'/>" alt="no cover">
+            {% endif %}
+        </a>
+        {% if v.score %}<span class="score-badge">{{ v.score }}</span>{% endif %}
         {% with code=v.code, is_favorited=v.is_favorited %}{% include "favorite_btn.html" %}{% endwith %}
-    </span>
-    <a href="/videos/{{ v.code }}">
-        {% if v.cover_url %}
-        <img src="{{ v.cover_url }}" alt="{{ v.code }}" loading="lazy">
-        {% else %}
-        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'/>" alt="no cover">
-        {% endif %}
-    </a>
-    <div class="info">
-        <div class="code"><a href="/videos/{{ v.code }}">{{ v.code }}</a></div>
-        <div class="title">{{ v.title[:60] if v.title else '' }}</div>
-        <div class="meta">
-            <span>{% if v.score %}★ {{ v.score }}{% endif %}</span>
+    </div>
+    <div class="card-body">
+        <div class="card-code"><a href="/videos/{{ v.code }}">{{ v.code }}</a></div>
+        <div class="card-meta">
             <span>{% if v.date %}{{ v.date }}{% endif %}</span>
         </div>
     </div>
@@ -47,8 +42,8 @@
 </div>
 
 {% if total_pages > 1 %}
-<nav style="margin-top:1rem;">
-    <ul style="display:flex; gap:0.5rem; list-style:none; padding:0;">
+<nav style="margin-top:1.25rem;">
+    <ul class="pagination">
     {% for p in range(1, total_pages + 1) %}
         <li>
             <a {% if p == page %}class="active"{% endif %}
@@ -63,5 +58,5 @@
 {% endif %}
 
 {% if not videos %}
-<p>No videos found for this actress.</p>
+<p class="text-muted">No videos found for this actress.</p>
 {% endif %}

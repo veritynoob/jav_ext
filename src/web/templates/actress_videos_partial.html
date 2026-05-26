@@ -1,17 +1,19 @@
 <tr><td colspan="3" style="padding:0;">
+    <div class="table-wrap">
     <table>
     <thead><tr><th></th><th>Cover</th><th>Code</th><th>Title</th><th>Score</th><th>Date</th></tr></thead>
     <tbody>
     {% for v in videos %}
     <tr>
         <td>{% with code=v.code, is_favorited=v.is_favorited %}{% include "favorite_btn.html" %}{% endwith %}</td>
-        <td>{% if v.cover_url %}<img src="{{ v.cover_url }}" style="width:40px;">{% endif %}</td>
+        <td>{% if v.cover_url %}<img src="{{ v.cover_url }}" style="width:44px;border-radius:3px;">{% endif %}</td>
         <td><a href="/videos/{{ v.code }}">{{ v.code }}</a></td>
         <td>{{ v.title[:50] if v.title else '' }}</td>
-        <td>{{ v.score }}</td>
+        <td><span style="color:var(--accent);">{{ v.score }}</span></td>
         <td>{{ v.date }}</td>
     </tr>
     {% endfor %}
     </tbody>
     </table>
+    </div>
 </td></tr>
