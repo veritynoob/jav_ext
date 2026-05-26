@@ -78,6 +78,10 @@ async def video_list(
 
 @router.get("/{code}")
 async def video_detail(request: Request, code: str):
+    ref = request.headers.get("Referer", "")
+    if ref and "/videos/" not in ref:
+        request.session["prev_page"] = ref
+
     db_path = get_db_path()
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -102,7 +106,8 @@ async def video_detail(request: Request, code: str):
             "SELECT list_type, rank FROM rankings WHERE video_code=?", (code,)
         ).fetchall()
 
-        return templates.TemplateResponse(request, "video_detail.html", {
+        tmpl = "video_detail_content.html" if request.headers.get("HX-Request") else "video_detail.html"
+        return templates.TemplateResponse(request, tmpl, {
             "video": video,
             "actresses": actresses,
             "magnets": magnets,
@@ -168,7 +173,7 @@ async def video_edit_save(request: Request, code: str):
                 "FROM magnets WHERE video_code=?", (code,)
             ).fetchall()
             rankings = conn.execute("SELECT list_type, rank FROM rankings WHERE video_code=?", (code,)).fetchall()
-            resp = templates.TemplateResponse(request, "video_detail.html", {
+            resp = templates.TemplateResponse(request, "video_detail_content.html", {
                 "video": video, "actresses": actresses, "magnets": magnets, "rankings": rankings,
                 "is_favorited": bool(video["is_favorited"]),
             })
@@ -197,7 +202,7 @@ async def video_favorite_toggle(request: Request, code: str):
 
 
 @router.post("/{code}/delete")
-async def video_delete(code: str):
+async def video_delete(request: Request, code: str):
     from fastapi.responses import RedirectResponse
     from src.db import soft_delete_video
 
@@ -205,6 +210,10 @@ async def video_delete(code: str):
     conn = sqlite3.connect(db_path)
     try:
         soft_delete_video(conn, code)
+        if request.headers.get("HX-Request"):
+            from fastapi.responses import Response
+            prev = request.session.get("prev_page", "/videos")
+            return Response(status_code=200, headers={"HX-Redirect": prev})
         return RedirectResponse(url="/videos", status_code=302)
     finally:
         conn.close()

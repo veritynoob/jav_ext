@@ -1,23 +1,22 @@
 <div id="video-table">
 <div class="video-grid">
 {% for v in videos %}
-<div class="video-card" style="position:relative;">
-    <span style="position:absolute;top:0.25rem;right:0.25rem;z-index:2;">
+<div class="video-card">
+    <div class="cover-wrap">
+        <a href="/videos/{{ v.code }}">
+            {% if v.cover_url %}
+            <img src="{{ v.cover_url }}" alt="{{ v.code }}" loading="lazy">
+            {% else %}
+            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'/>" alt="no cover">
+            {% endif %}
+        </a>
+        {% if v.score %}<span class="score-badge">{{ v.score }}</span>{% endif %}
         {% with code=v.code, is_favorited=v.is_favorited %}{% include "favorite_btn.html" %}{% endwith %}
-    </span>
-    <a href="/videos/{{ v.code }}">
-        {% if v.cover_url %}
-        <img src="{{ v.cover_url }}" alt="{{ v.code }}" loading="lazy">
-        {% else %}
-        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'/>" alt="no cover">
-        {% endif %}
-    </a>
-    <div class="info">
-        <div class="code"><a href="/videos/{{ v.code }}">{{ v.code }}</a></div>
-        <div class="title">{{ v.title[:60] if v.title else '' }}</div>
-        {% if v.first_actress %}<div class="actress">{{ v.first_actress }}</div>{% endif %}
-        <div class="meta">
-            <span>{% if v.score %}★ {{ v.score }}{% endif %}</span>
+    </div>
+    <div class="card-body">
+        <div class="card-code"><a href="/videos/{{ v.code }}">{{ v.code }}</a></div>
+        {% if v.first_actress %}<div class="card-actress">{{ v.first_actress }}</div>{% endif %}
+        <div class="card-meta">
             <span>{% if v.date %}{{ v.date }}{% endif %}</span>
         </div>
     </div>
@@ -26,8 +25,8 @@
 </div>
 
 {% if total_pages > 1 %}
-<nav style="margin-top:1rem;">
-    <ul style="display:flex; gap:0.5rem; list-style:none; padding:0;">
+<nav style="margin-top:1.25rem;">
+    <ul class="pagination">
     {% for p in range(1, total_pages + 1) %}
         <li>
             <a {% if p == page %}class="active"{% endif %}

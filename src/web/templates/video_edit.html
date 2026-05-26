@@ -1,17 +1,19 @@
-<article>
+<div class="edit-card">
     <h2>Edit {{ video.code }}</h2>
-    {% if error %}<p style="color:var(--destructive);">{{ error }}</p>{% endif %}
-    <form hx-post="/videos/{{ video.code }}/edit" hx-target="closest article" hx-swap="outerHTML">
-        <label>Code <input type="text" value="{{ video.code }}" disabled></label>
-        <label>Title <input type="text" name="title" value="{{ video.title or '' }}" required></label>
-        <div class="grid">
+    {% if error %}<p style="color:var(--destructive);margin-bottom:0.5rem;">{{ error }}</p>{% endif %}
+    <form hx-post="/videos/{{ video.code }}/edit" hx-target="closest .edit-card" hx-swap="outerHTML">
+        <label style="margin-bottom:0.6rem;">Code <input type="text" value="{{ video.code }}" disabled></label>
+        <label style="margin-bottom:0.6rem;">Title <input type="text" name="title" value="{{ video.title or '' }}" required></label>
+        <div class="edit-form-grid" style="margin-bottom:0.75rem;">
             <label>Score <input type="number" name="score" step="0.1" min="0" max="10" value="{{ video.score or 0 }}"></label>
             <label>Date <input type="text" name="date" value="{{ video.date or '' }}"></label>
             <label>Duration <input type="text" name="duration" value="{{ video.duration or '' }}"></label>
             <label>Maker <input type="text" name="maker" value="{{ video.maker or '' }}"></label>
             <label>Label <input type="text" name="label" value="{{ video.label or '' }}"></label>
         </div>
-        <button type="submit">Save</button>
-        <a href="/videos/{{ video.code }}" hx-get="/videos/{{ video.code }}" hx-target="closest article" hx-swap="outerHTML" role="button" class="secondary">Cancel</a>
+        <div style="display:flex;gap:0.5rem;">
+            <button type="submit">Save</button>
+            <a href="/videos/{{ video.code }}" hx-get="/videos/{{ video.code }}" hx-target="closest .edit-card" hx-swap="outerHTML" role="button" class="btn btn-outline">Cancel</a>
+        </div>
     </form>
-</article>
+</div>

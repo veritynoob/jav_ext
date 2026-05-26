@@ -1,17 +1,16 @@
-<h2>Actresses</h2>
-
-<form hx-get="/actresses" hx-target="#main" hx-push-url="true">
+<form hx-get="/actresses" hx-target="#main" hx-push-url="true" class="form-row mb-1">
     <input type="search" name="q" value="{{ q }}" placeholder="Search actress name...">
     <button type="submit">Search</button>
 </form>
 
+<div class="table-wrap">
 <table>
     <thead><tr><th>Name</th><th>Videos</th><th></th></tr></thead>
     <tbody>
     {% for a in actresses %}
     <tr>
-        <td>{{ a.name }}</td>
-        <td>{{ a.video_count }}</td>
+        <td style="font-weight:500;">{{ a.name }}</td>
+        <td><span style="font-family:var(--font-mono);color:var(--accent);">{{ a.video_count }}</span></td>
         <td>
             <a href="/actresses/{{ a.name|urlencode }}"
                hx-get="/actresses/{{ a.name|urlencode }}"
@@ -20,7 +19,8 @@
         </td>
     </tr>
     {% else %}
-    <tr><td colspan="3">No actresses found. Scrape some videos first.</td></tr>
+    <tr><td colspan="3" class="text-muted">No actresses found. Scrape some videos first.</td></tr>
     {% endfor %}
     </tbody>
 </table>
+</div>

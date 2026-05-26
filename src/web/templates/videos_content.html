@@ -1,32 +1,24 @@
-<h2>Videos ({{ total }})</h2>
-
-<div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
-    <form hx-get="/videos" hx-target="#main" hx-push-url="true" style="display:flex; gap:0.5rem; align-items:end; flex-wrap:wrap;">
-        <input type="hidden" name="q" value="{{ q }}">
-        <label>Filter
-            <select name="list_type" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
-                <option value="">All</option>
-                <option value="most_wanted" {% if list_type=='most_wanted' %}selected{% endif %}>Most Wanted</option>
-                <option value="top_rated" {% if list_type=='top_rated' %}selected{% endif %}>Top Rated</option>
-            </select>
-        </label>
-        <label>Sort
-            <select name="sort" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
-                <option value="created_at" {% if sort=='created_at' %}selected{% endif %}>Added</option>
-                <option value="date" {% if sort=='date' %}selected{% endif %}>Release Date</option>
-                <option value="score" {% if sort=='score' %}selected{% endif %}>Score</option>
-                <option value="code" {% if sort=='code' %}selected{% endif %}>Code</option>
-                <option value="title" {% if sort=='title' %}selected{% endif %}>Title</option>
-            </select>
-        </label>
-        <label>Order
-            <select name="order" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
-                <option value="desc" {% if order=='desc' %}selected{% endif %}>Desc</option>
-                <option value="asc" {% if order=='asc' %}selected{% endif %}>Asc</option>
-            </select>
-        </label>
-        <noscript><button type="submit">Apply</button></noscript>
-    </form>
-</div>
+{% if total > 0 %}
+<form hx-get="/videos" hx-target="#main" hx-push-url="true" class="controls-bar">
+    <input type="hidden" name="q" value="{{ q }}">
+    <select name="list_type" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
+        <option value="">All videos</option>
+        <option value="most_wanted" {% if list_type=='most_wanted' %}selected{% endif %}>Most Wanted</option>
+        <option value="top_rated" {% if list_type=='top_rated' %}selected{% endif %}>Top Rated</option>
+    </select>
+    <select name="sort" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
+        <option value="created_at" {% if sort=='created_at' %}selected{% endif %}>Added</option>
+        <option value="date" {% if sort=='date' %}selected{% endif %}>Release Date</option>
+        <option value="score" {% if sort=='score' %}selected{% endif %}>Score</option>
+        <option value="code" {% if sort=='code' %}selected{% endif %}>Code</option>
+        <option value="title" {% if sort=='title' %}selected{% endif %}>Title</option>
+    </select>
+    <select name="order" onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}))">
+        <option value="desc" {% if order=='desc' %}selected{% endif %}>Desc</option>
+        <option value="asc" {% if order=='asc' %}selected{% endif %}>Asc</option>
+    </select>
+    <noscript><button type="submit">Apply</button></noscript>
+</form>
+{% endif %}
 
 {% include "videos_partial.html" %}

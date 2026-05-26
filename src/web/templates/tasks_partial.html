@@ -1,20 +1,18 @@
-<h2>Tasks</h2>
-
-<div class="grid">
-    <article>
+<div class="task-cards" style="margin-bottom:1.5rem;">
+    <div class="task-card">
         <h3>Trigger Scrape</h3>
         <p>Run the full scrape pipeline (list pages + magnets for new videos + backfill).</p>
         <button hx-post="/tasks/scrape" hx-target="#task-list" hx-swap="innerHTML">
             Start Scrape
         </button>
-    </article>
-    <article>
+    </div>
+    <div class="task-card">
         <h3>Trigger Backfill</h3>
         <p>Search magnets for videos that are missing them (within configured date range).</p>
         <button hx-post="/tasks/backfill" hx-target="#task-list" hx-swap="innerHTML">
             Start Backfill
         </button>
-    </article>
+    </div>
 </div>
 
 <div id="task-list" hx-get="/tasks/status" hx-trigger="every 3s" hx-swap="innerHTML">
