@@ -1,0 +1,16 @@
+services:
+  app:
+    image: jav-ext:local
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./covers:/app/covers
+    restart: unless-stopped
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
